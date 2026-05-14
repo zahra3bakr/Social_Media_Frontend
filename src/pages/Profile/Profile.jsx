@@ -810,7 +810,7 @@ export const Profile = () => {
                         <div key={followedUser._id} className="user-list-item d-flex align-items-center justify-content-between mb-3 p-2 border-bottom">
                             <div className="d-flex align-items-center" onClick={() => { setShowFollowingModal(false); navigate(`/user-profile/${followedUser._id}`); }} style={{ cursor: 'pointer' }}>
                                 <img 
-                                    src={followedUser.profilePicture ? `${import.meta.env.VITE_API_URL}${followedUser.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                                    src={followedUser.profilePicture ? `${BASE_URL}${followedUser.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
                                     alt={followedUser.username} 
                                     className="rounded-circle me-3"
                                     style={{ width: '45px', height: '45px', objectFit: 'cover' }}

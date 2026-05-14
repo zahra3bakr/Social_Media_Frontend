@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, ListGroup, Spinner, Button } from 'react-boo
 import { useNavigate } from 'react-router-dom';
 import { GoHeart } from "react-icons/go";
 import { FaRegComment, FaUserPlus, FaEnvelope } from "react-icons/fa6";
-import API from '../../services/api';
+import API, { BASE_URL } from '../../services/api';
 import toast from 'react-hot-toast';
 import '../../Sass/style.scss';
 
@@ -75,7 +75,7 @@ export const Notifications = () => {
         }
     };
 
-    const getImageUrl = (path) => path ? `${import.meta.env.VITE_API_URL}${path}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    const getImageUrl = (path) => path ? `${BASE_URL}${path}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
     return (
         <Container className="py-4">

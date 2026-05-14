@@ -1,4 +1,4 @@
-import API from '../../services/api'
+import API, { BASE_URL } from '../../services/api'
 import React, { useEffect, useState } from 'react'
 import { Button, Card, Col, Container, Row, Spinner, Alert, Modal, Form } from 'react-bootstrap'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -262,7 +262,7 @@ export const UserProfile = () => {
         }
     };
 
-    const getImageUrl = (pic) => pic ? `${import.meta.env.VITE_API_URL}${pic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    const getImageUrl = (pic) => pic ? `${BASE_URL}${pic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
     const formatDateShort = (dateString) => new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 

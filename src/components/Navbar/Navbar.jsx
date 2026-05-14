@@ -6,7 +6,7 @@ import { logout, switchAccount } from '../../redux/slices/authSlice'
 import { selectIsDarkMode } from '../../redux/slices/themeSlice'
 import { TbSocial } from "react-icons/tb";
 import { AiOutlineLogin, AiOutlineLogout, AiOutlineSearch } from "react-icons/ai";
-import API from '../../services/api'
+import API, { BASE_URL } from '../../services/api'
 
 import { ThemeToggle } from '../ThemeToggle/ThemeToggle'
 
@@ -146,7 +146,7 @@ export const Navbar = () => {
                                         title={
                                             <div className="d-flex align-items-center gap-2" style={{ display: 'inline-flex' }}>
                                                 {user?.profilePicture ? (
-                                                    <img src={`${import.meta.env.VITE_API_URL}${user.profilePicture}`} alt="Avatar" className='rounded-circle border border-2 border-danger' style={{width: '40px', height: '40px', objectFit: 'cover'}} />
+                                                    <img src={`${BASE_URL}${user.profilePicture}`} alt="Avatar" className='rounded-circle border border-2 border-danger' style={{width: '40px', height: '40px', objectFit: 'cover'}} />
                                                 ) : (
                                                     <div className='bg-primary text-white d-flex justify-content-center align-items-center rounded-circle border border-2 border-danger' style={{width: '40px', height: '40px', fontSize: '1.2rem', textTransform: 'uppercase'}}>
                                                         {user?.username?.charAt(0) || 'U'}
@@ -169,7 +169,7 @@ export const Navbar = () => {
                                             >
                                                 <div className="d-flex align-items-center gap-3 py-1">
                                                     {acc.user.profilePicture ? (
-                                                        <img src={`${import.meta.env.VITE_API_URL}${acc.user.profilePicture}`} alt="Avatar" className='rounded-circle' style={{width: '35px', height: '35px', objectFit: 'cover'}} />
+                                                        <img src={`${BASE_URL}${acc.user.profilePicture}`} alt="Avatar" className='rounded-circle' style={{width: '35px', height: '35px', objectFit: 'cover'}} />
                                                     ) : (
                                                         <div className='bg-secondary text-white d-flex justify-content-center align-items-center rounded-circle' style={{width: '35px', height: '35px', fontSize: '1rem', textTransform: 'uppercase'}}>
                                                             {acc.user.username?.charAt(0) || 'U'}

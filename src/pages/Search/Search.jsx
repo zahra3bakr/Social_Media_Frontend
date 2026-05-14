@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import API from '../../services/api';
+import API, { BASE_URL } from '../../services/api';
 import { Container, Row, Col, Nav, Card, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -91,7 +91,7 @@ export const Search = () => {
                                             <Card key={user._id} className="mb-3 shadow-sm border-0 glass-card">
                                                 <Card.Body className="d-flex align-items-center gap-3">
                                                     <img
-                                                        src={user.profilePicture ? `${import.meta.env.VITE_API_URL}${user.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                                                        src={user.profilePicture ? `${BASE_URL}${user.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                         alt={user.username}
                                                         className="rounded-circle"
                                                         style={{ width: '60px', height: '60px', objectFit: 'cover' }}
@@ -120,7 +120,7 @@ export const Search = () => {
                                                 <Card.Body>
                                                     <div className="d-flex align-items-center gap-2 mb-3">
                                                         <img
-                                                            src={post.userId.profilePicture ? `${import.meta.env.VITE_API_URL}${post.userId.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                                                            src={post.userId.profilePicture ? `${BASE_URL}${post.userId.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                             alt={post.userId.username}
                                                             className="rounded-circle"
                                                             style={{ width: '40px', height: '40px', objectFit: 'cover' }}

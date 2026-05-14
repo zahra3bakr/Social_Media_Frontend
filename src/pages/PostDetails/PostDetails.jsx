@@ -5,7 +5,7 @@ import { GoHeart } from "react-icons/go";
 import { FaRegComment, FaArrowLeft } from "react-icons/fa6";
 import { BsThreeDots } from "react-icons/bs";
 import { useSelector } from 'react-redux';
-import API from '../../services/api';
+import API, { BASE_URL } from '../../services/api';
 import toast from 'react-hot-toast';
 import '../../Sass/style.scss';
 
@@ -205,7 +205,7 @@ export const PostDetails = () => {
         }
     };
 
-    const getImageUrl = (path) => path ? `${import.meta.env.VITE_API_URL}${path}` : null;
+    const getImageUrl = (path) => path ? `${BASE_URL}${path}` : null;
 
     if (loading) return (
         <Container className="py-5 text-center">

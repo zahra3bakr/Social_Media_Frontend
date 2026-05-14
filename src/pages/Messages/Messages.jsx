@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import API from '../../services/api'
+import API, { BASE_URL } from '../../services/api'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { Modal, Button, Form, Dropdown, Spinner } from 'react-bootstrap'
@@ -212,7 +212,7 @@ export const Messages = () => {
                                         <div className="chat-avatar-wrapper">
                                             <img
                                                 src={otherUser.profilePicture
-                                                    ? `${import.meta.env.VITE_API_URL}${otherUser.profilePicture}`
+                                                    ? `${BASE_URL}${otherUser.profilePicture}`
                                                     : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                 alt={otherUser.username}
                                                 className="chat-avatar"
@@ -252,7 +252,7 @@ export const Messages = () => {
                                 <div className="chat-avatar-wrapper">
                                     <img
                                         src={selectedUser.profilePicture
-                                            ? `${import.meta.env.VITE_API_URL}${selectedUser.profilePicture}`
+                                            ? `${BASE_URL}${selectedUser.profilePicture}`
                                             : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                         alt={selectedUser.username}
                                         className="chat-avatar"
@@ -300,7 +300,7 @@ export const Messages = () => {
                                                 {!isMe && (
                                                     <img
                                                         src={selectedUser.profilePicture
-                                                            ? `${import.meta.env.VITE_API_URL}${selectedUser.profilePicture}`
+                                                            ? `${BASE_URL}${selectedUser.profilePicture}`
                                                             : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                         alt=""
                                                         className="bubble-avatar"
