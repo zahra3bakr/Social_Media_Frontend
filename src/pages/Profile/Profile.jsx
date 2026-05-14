@@ -23,6 +23,7 @@ export const Profile = () => {
     const [showEditModal, setShowEditModal] = useState(false)
     const [editLoading, setEditLoading] = useState(false)
     const [username, setUsername] = useState('')
+    const [email, setEmail] = useState('')
     const [bio, setBio] = useState('')
     const [selectedFile, setSelectedFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState(null)
@@ -130,6 +131,7 @@ export const Profile = () => {
                 setUser(response.data.user)
                 setPostsCount(response.data.postsCount || 0)
                 setUsername(response.data.user.username)
+                setEmail(response.data.user.email || '')
                 setBio(response.data.user.bio || '')
             } else {
                 setError(response.data.message || "Failed to load profile data")
@@ -159,6 +161,7 @@ export const Profile = () => {
         try {
             const formData = new FormData()
             formData.append('username', username)
+            formData.append('email', email)
             formData.append('bio', bio)
             if (selectedFile) {
                 formData.append('profilePicture', selectedFile)
@@ -731,6 +734,17 @@ export const Profile = () => {
                             placeholder="Enter username" 
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                            className="rounded-pill px-3 py-2"
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Email</Form.Label>
+                        <Form.Control 
+                            type="email" 
+                            placeholder="Enter email" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="rounded-pill px-3 py-2"
                         />
                     </Form.Group>
