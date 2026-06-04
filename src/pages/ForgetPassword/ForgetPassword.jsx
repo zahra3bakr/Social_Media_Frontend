@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Button, Container, Form, Row, Col } from "react-bootstrap"
+import { Button, Container, Form, Row, Col, Spinner } from "react-bootstrap"
 import { Link, useNavigate } from "react-router-dom"
 import { forgetPassword } from "../../services/authService"
 import toast from 'react-hot-toast'
@@ -7,10 +7,12 @@ import toast from 'react-hot-toast'
 export const ForgetPassword = () => {
     const [email, setEmail] = useState('')
     const [message, setMessage] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setIsLoading(true)
         try {
             // api call
             await forgetPassword(email)
@@ -21,6 +23,8 @@ export const ForgetPassword = () => {
             }, 2000)
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to send email!")
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -45,7 +49,16 @@ export const ForgetPassword = () => {
                                 />
                             </Form.Group>
 
-                            <Button type='submit' className='btn-forget w-100 mt-4 mb-3'>Send Reset Link</Button>
+                            <Button type='submit' className='btn-forget w-100 mt-4 mb-3' disabled={isLoading}>
+                                {isLoading ? (
+                                    <>
+                                        <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                                        <span className="ms-2">Sending...</span>
+                                    </>
+                                ) : (
+                                    'Send Reset Link'
+                                )}
+                            </Button>
 
                         </Form>
                     </Col>
