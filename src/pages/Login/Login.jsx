@@ -10,16 +10,18 @@ import toast from 'react-hot-toast'
 
 
 export const Login = () => {
+    // State Hooks
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [isPassword, setIsPassword] = useState(true)
+    const [isPassword, setIsPassword] = useState(true) 
     const navigate = useNavigate()
-    const dispatch = useDispatch()
+    const dispatch = useDispatch() // send actions to the store
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
+        e.preventDefault() // prevent from reloading
 
         try {
+            // api call
             const data = await login({ email, password })
 
             if (data.token) {

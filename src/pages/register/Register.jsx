@@ -13,12 +13,14 @@ export const Register = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
+    // put inputs in one object (the diff that not in login)
     const handleChange = (e) => setFormData({...formData , [e.target.name]: e.target.value})
 
     const handleSubmit = async (e) => {
         e.preventDefault()
 
         try {
+            // api call
             const data = await register(formData)
 
             dispatch(loginSuccess({ token: data.token, user: data.user }))

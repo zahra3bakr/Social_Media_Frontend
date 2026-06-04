@@ -11,6 +11,7 @@ const API = axios.create({
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem('userToken')
 
+    //prevent sending token for login/register requests 
     if (token) {
         req.headers.Authorization = `Bearer ${token}`
     }

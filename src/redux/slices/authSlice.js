@@ -4,12 +4,13 @@ import { createSlice } from '@reduxjs/toolkit';
 const userToken = localStorage.getItem('userToken');
 const userInfo = localStorage.getItem('userInfo');
 
-// Get Saved Accounts Array
+// Get saved Accounts Array (switch accounts feature)
 const savedAccountsStr = localStorage.getItem('savedAccounts');
 let savedAccounts = [];
 try {
+    // parse for json which coming from localStorage
     const rawAccounts = savedAccountsStr ? JSON.parse(savedAccountsStr) : [];
-    // Ensure uniqueness by ID (check both _id and id)
+    // check uniqueness by ID (check both _id and id)
     const uniqueMap = new Map();
     rawAccounts.forEach(acc => {
         const uid = acc.user?._id || acc.user?.id;
@@ -17,6 +18,7 @@ try {
             uniqueMap.set(String(uid), acc);
         }
     });
+    // convert map to array
     savedAccounts = Array.from(uniqueMap.values());
 } catch (e) {
     savedAccounts = [];
@@ -25,12 +27,13 @@ try {
 
 let parsedUser = null;
 try {
+    // parse for userInfo
     parsedUser = userInfo ? JSON.parse(userInfo) : null;
 } catch (e) {
     parsedUser = null;
 }
 
-// Ensure the current user is in savedAccounts if not already
+// check the current user is in savedAccounts if not already
 if (parsedUser && userToken) {
     const currentId = String(parsedUser._id || parsedUser.id);
     const exists = savedAccounts.find(acc => String(acc.user?._id || acc.user?.id) === currentId);
@@ -41,7 +44,7 @@ if (parsedUser && userToken) {
 }
 
 const initialState = {
-    isLoggedIn: !!userToken,
+    isLoggedIn: !!userToken, // convert any value to boolean
     token: userToken || null,
     user: parsedUser,
     savedAccounts: savedAccounts, // array of { token, user }
@@ -52,11 +55,12 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         loginSuccess: (state, action) => {
-            const { token, user } = action.payload;
+            const { token, user } = action.payload; // recieved from api
             state.isLoggedIn = true;
             state.token = token;
             state.user = user;
             
+            // Save data in browser so if page reloads, user will be logged in
             localStorage.setItem('userToken', token);
             localStorage.setItem('userInfo', JSON.stringify(user));
 
@@ -100,11 +104,11 @@ const authSlice = createSlice({
                 const existingIndex = state.savedAccounts.findIndex(acc => String(acc.user?._id || acc.user?.id) === userId);
                 if (existingIndex >= 0) {
                     state.savedAccounts[existingIndex] = {
+                        // changr only user not token 
                         ...state.savedAccounts[existingIndex],
                         user: updatedUser
                     };
                 } else {
-                    // If not found (shouldn't happen), add it
                     state.savedAccounts.push({ token: state.token, user: updatedUser });
                 }
                 localStorage.setItem('savedAccounts', JSON.stringify(state.savedAccounts));
@@ -112,9 +116,8 @@ const authSlice = createSlice({
         },
 
 
+        // we keep savedAccounts so other accounts still work
         logout: (state) => {
-
-            // We keep the accounts in savedAccounts, just log out the active session
             state.isLoggedIn = false;
             state.token = null;
             state.user = null;
