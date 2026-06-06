@@ -8,7 +8,7 @@ import { VscEye, VscEyeClosed } from "react-icons/vsc"
 export const ResetPassword = () => {
     const [password, setPassword] = useState('')
     const [isPassword, setIsPassword] = useState(true)
-    const { token } = useParams()
+    const { token } = useParams() // get token from url 
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {

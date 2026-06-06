@@ -1,3 +1,5 @@
+import {auth , googleProvider} from "../../firebase"
+import { signInWithPopup } from "firebase/auth"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
@@ -6,6 +8,8 @@ import { login } from "../../services/authService"
 import { Button, Container, Form, InputGroup, Row, Col } from "react-bootstrap"
 import { VscEye, VscEyeClosed } from "react-icons/vsc"
 import toast from 'react-hot-toast'
+import {getAuth , GoogleAuthProvider} from "firebase/auth"
+import {getFirestore} from "firebase/firestore"
 
 
 
@@ -33,6 +37,16 @@ export const Login = () => {
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Login Failed!")
+        }
+    }
+
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, provider)
+            const user = result.user
+            console.log("Name: " , user.displayName)
+        } catch (error) {
+            toast.error("Google Login Failed!")
         }
     }
 
@@ -86,7 +100,7 @@ export const Login = () => {
                                 </div>
                             </Form.Group>
 
-                            <Button type='submit' className='btn-login w-100 mt-2 mb-3'>Login</Button>
+                            <Button type='submit' className='btn-login w-100 mt-2 mb-3' onClick={handleGoogleLogin}>Login</Button>
 
                             <p className='text-center mb-0' style={{ fontSize: '0.9rem', color: '#666' }}>
                                 New user? <Link style={{ color: '#c00000', textDecoration: 'none', fontWeight: 'bold' }} to='/Register'>Create an account</Link>
@@ -98,3 +112,7 @@ export const Login = () => {
         </div>
     )
 }
+
+export const auth = getAuth(app)
+export const db = getFirestore(app) 
+export const provider = new GoogleAuthProvider()

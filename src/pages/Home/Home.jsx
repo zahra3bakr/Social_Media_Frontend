@@ -12,6 +12,7 @@ import API, { BASE_URL } from '../../services/api';
 import toast from 'react-hot-toast';
 
 export const Home = () => {
+  // Posts
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
@@ -19,7 +20,7 @@ export const Home = () => {
   const [fetchingPosts, setFetchingPosts] = useState(true);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
 
-  // States for Comments
+  // Comments
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [postComments, setPostComments] = useState([]);
   const [fetchingComments, setFetchingComments] = useState(false);
@@ -27,7 +28,7 @@ export const Home = () => {
   const [replyText, setReplyText] = useState("");
   const [activeReplyId, setActiveReplyId] = useState(null);
 
-  // States for Likes Modal
+  // Likes Modal
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [likesList, setLikesList] = useState([]);
   const [fetchingLikes, setFetchingLikes] = useState(false);
@@ -45,14 +46,15 @@ export const Home = () => {
   const [editCommentLoading, setEditCommentLoading] = useState(false);
   const [editingCommentPostId, setEditingCommentPostId] = useState(null);
 
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef(null); // when user clicks on the image upload button, this ref will be triggered
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation(); // get active item 
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
-  const currentUserId = currentUser?._id || currentUser?.id;
+  const currentUserId = currentUser?._id || currentUser?.id; // get user id from redux store
 
-  // Normalize following array to plain string IDs for reliable comparison
+  // for coparison of following ids 
+  // flow -> 
   const getFollowingIds = () => {
     if (!currentUser?.following) return [];
     return currentUser.following.map(id => {
@@ -67,6 +69,7 @@ export const Home = () => {
     return getFollowingIds().includes(String(targetUserId));
   };
 
+  // for follow & follow back button
   const getFollowButtonText = (targetUserId) => {
     if (checkIsFollowing(targetUserId)) return "Following";
     const amIFollowed = currentUser?.followers?.some(fid => {
@@ -107,18 +110,20 @@ export const Home = () => {
     try {
       const { data } = await API.get('/users/profile');
       if (data.success) {
-        dispatch(updateUser(data.user));
+        dispatch(updateUser(data.user)); // update redux
       }
     } catch (error) {
       console.error("Error fetching my profile", error);
     }
   };
 
+  // fetch all posts
   useEffect(() => {
     fetchMyProfile();
     fetchPosts();
     fetchSuggestedUsers();
-  }, []);
+  }, [] );
+  // [] -> runs only once
 
   const fetchSuggestedUsers = async () => {
     try {
@@ -144,6 +149,7 @@ export const Home = () => {
     }
   };
 
+  // create post
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim() && !image) {
@@ -153,6 +159,7 @@ export const Home = () => {
 
     try {
       setLoading(true);
+      // sending image with text in post
       const formData = new FormData();
       formData.append("content", content);
       if (image) {
@@ -164,8 +171,10 @@ export const Home = () => {
         toast.success("Post created successfully!");
         setContent("");
         setImage(null);
+
+        // clear file input -> if user likes to upload another image
         if (fileInputRef.current) fileInputRef.current.value = "";
-        fetchPosts(); // Refetching user data population
+        fetchPosts();
       }
     } catch (error) {
       console.error("Error creating post", error);
@@ -191,11 +200,13 @@ export const Home = () => {
     try {
       const { data } = await API.patch(`/posts/like/${postId}`);
       if (data.success) {
+        // Optimistic Update -> update immediately in UI
         setPosts(posts.map(post => {
           if (post._id === postId) {
             const isLiked = data.message === "Liked!";
             return {
               ...post,
+              // Match.max() -> to not goes negative
               likesCount: isLiked ? (post.likesCount || 0) + 1 : Math.max(0, (post.likesCount || 0) - 1), 
             };
           }
@@ -224,6 +235,7 @@ export const Home = () => {
     }
   };
 
+  // if comments opened pls close it & otherwise
   const toggleComments = async (postId) => {
     if (expandedPostId === postId) {
       setExpandedPostId(null);
@@ -257,7 +269,7 @@ export const Home = () => {
         toast.success("Comment added!");
         setCommentText("");
         fetchComments(postId);
-        // Optimistically update comment count
+        // Optimistically update comment count immediately in UI
         setPosts(posts.map(p => p._id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p));
       }
     } catch (error) {
@@ -376,6 +388,7 @@ export const Home = () => {
     }
   };
 
+  // Helper functions -> for formatting time & image
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
