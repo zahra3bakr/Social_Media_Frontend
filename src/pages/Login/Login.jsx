@@ -1,4 +1,4 @@
-import {auth , googleProvider} from "../../firebase"
+import {auth, provider} from "../../firebase"
 import { signInWithPopup } from "firebase/auth"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
@@ -8,10 +8,6 @@ import { login } from "../../services/authService"
 import { Button, Container, Form, InputGroup, Row, Col } from "react-bootstrap"
 import { VscEye, VscEyeClosed } from "react-icons/vsc"
 import toast from 'react-hot-toast'
-import {getAuth , GoogleAuthProvider} from "firebase/auth"
-import {getFirestore} from "firebase/firestore"
-
-
 
 export const Login = () => {
     // State Hooks
@@ -112,7 +108,3 @@ export const Login = () => {
         </div>
     )
 }
-
-export const auth = getAuth(app)
-export const db = getFirestore(app) 
-export const provider = new GoogleAuthProvider()
