@@ -13,7 +13,7 @@ export const register = async (userData) => {
 export const forgetPassword = async (email) => {
     const response = await API.post('/auth/forgetPassword' , { email })
     return response.data
-}
+}   
 
 export const resetPassword = async (token, password) => {
     const response = await API.put(`/auth/resetPassword/${token}` , { password })
