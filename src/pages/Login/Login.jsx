@@ -1,5 +1,3 @@
-import {auth, provider} from "../../firebase"
-import { signInWithPopup } from "firebase/auth"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
@@ -33,16 +31,6 @@ export const Login = () => {
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Login Failed!")
-        }
-    }
-
-    const handleGoogleLogin = async () => {
-        try {
-            const result = await signInWithPopup(auth, provider)
-            const user = result.user
-            console.log("Name: " , user.displayName)
-        } catch (error) {
-            toast.error("Google Login Failed!")
         }
     }
 
@@ -96,7 +84,7 @@ export const Login = () => {
                                 </div>
                             </Form.Group>
 
-                            <Button type='submit' className='btn-login w-100 mt-2 mb-3' onClick={handleGoogleLogin}>Login</Button>
+                            <Button type='submit' className='btn-login w-100 mt-2 mb-3'>Login</Button>
 
                             <p className='text-center mb-0' style={{ fontSize: '0.9rem', color: '#666' }}>
                                 New user? <Link style={{ color: '#c00000', textDecoration: 'none', fontWeight: 'bold' }} to='/Register'>Create an account</Link>

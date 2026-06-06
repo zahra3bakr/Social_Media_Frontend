@@ -13,7 +13,6 @@
     "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.15.2",
     "bootstrap": "^5.3.8",
-    "firebase": "^12.14.0",
     "react": "^19.2.5",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.5",
