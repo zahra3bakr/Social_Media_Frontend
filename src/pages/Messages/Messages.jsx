@@ -15,6 +15,7 @@ export const Messages = () => {
     const [selectedUser, setSelectedUser] = useState(null) // user we are chatting with
     const [newMessage, setNewMessage] = useState("") // current message input
     const [search, setSearch] = useState("") // search term for filtering conversations
+    const [searchedUsers, setSearchedUsers] = useState([]) // newly added state for global search
     const messagesEndRef = useRef(null) // ref to scroll to bottom of messages
 
     // Edit Message States
@@ -34,6 +35,39 @@ export const Messages = () => {
         // fetch all conversations 
         fetchConversations()
     }, [])  // [] -> only run once 
+
+    // Fetch users when searching globally
+    useEffect(() => {
+        if (!search.trim()) {
+            setSearchedUsers([])
+            return
+        }
+        const delayDebounceFn = setTimeout(async () => {
+            try {
+                const { data } = await API.get(`/search/users?query=${search}`)
+                if (data.success) {
+                    setSearchedUsers(data.users.filter(u => String(u._id) !== String(currentUserId)))
+                }
+            } catch (error) {
+                console.error("Failed to search users")
+            }
+        }, 300)
+        return () => clearTimeout(delayDebounceFn)
+    }, [search, currentUserId])
+
+    const startChatWithUser = (user) => {
+        const existingConv = conversations.find(c => 
+            c.participants.some(p => String(p._id) === String(user._id))
+        );
+        if (existingConv) {
+            fetchMessages(existingConv);
+        } else {
+            setSelectedUser(user);
+            setSelectedConv(null);
+            fetchMessagesByUserId(user._id);
+        }
+        setSearch("");
+    }
 
     // Auto-open chat when navigated from UserProfile
     useEffect(() => {
@@ -161,7 +195,7 @@ export const Messages = () => {
     const handleDeleteConversation = async () => {
         if (!selectedConv) return
         if (!window.confirm("Are you sure you want to delete the entire conversation? This cannot be undone.")) return
-        
+
         try {
             const { data } = await API.delete(`/messages/conversation/delete/${selectedConv._id}`)
             if (data.success) {
@@ -175,7 +209,7 @@ export const Messages = () => {
             toast.error("Failed to delete conversation")
         }
     }
- 
+
     // enter -> send message (without shift + enter) 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -183,12 +217,6 @@ export const Messages = () => {
             handleSendMessage(e) // call send message function
         }
     }
-
-    // filter conversations based on search term even written by lowercase
-    const filteredConversations = conversations.filter(conv => {
-        const other = conv.participants.find(p => p._id !== currentUserId) || conv.participants[0]
-        return other?.username?.toLowerCase().includes(search.toLowerCase())
-    })
 
     const formatTime = (dateStr) => {
         if (!dateStr) return ''
@@ -206,25 +234,58 @@ export const Messages = () => {
                         <p className="chat-list-sub">{conversations.length} conversations</p>
                     </div>
 
-                    <label className="chat-search-wrapper" style={{ cursor: 'text' }}>
+                    <div className="chat-search-wrapper">
                         <span className="search-icon">🔍</span>
                         <input
                             className="chat-search-input"
                             type="text"
-                            placeholder="Search conversations..."
+                            placeholder="Search users..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
-                    </label>
+                    </div>
 
                     <div className="chat-list-body">
-                        {filteredConversations.length === 0 ? (
+                        {search.trim() ? (
+                            searchedUsers.length === 0 ? (
+                                <div className="empty-state">
+                                    <span className="empty-icon">🔍</span>
+                                    <p>No users found</p>
+                                </div>
+                            ) : (
+                                searchedUsers.map(user => (
+                                    <div
+                                        key={user._id}
+                                        className={`chat-list-item ${selectedUser?._id === user._id ? 'active' : ''}`}
+                                        onClick={() => startChatWithUser(user)}
+                                    >
+                                        <div className="chat-avatar-wrapper">
+                                            <img
+                                                src={user.profilePicture
+                                                    ? `${BASE_URL}${user.profilePicture}`
+                                                    : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                                                alt={user.username}
+                                                className="chat-avatar"
+                                            />
+                                        </div>
+                                        <div className="chat-info">
+                                            <div className="chat-info-top">
+                                                <span className="chat-username">{user.username}</span>
+                                            </div>
+                                            <p className="chat-last-msg text-primary">
+                                                Start chatting...
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            )
+                        ) : conversations.length === 0 ? (
                             <div className="empty-state">
                                 <span className="empty-icon">💭</span>
                                 <p>No conversations yet</p>
                             </div>
                         ) : (
-                            filteredConversations.map(conv => {
+                            conversations.map(conv => {
                                 const otherUser = conv.participants.find(p => p._id !== currentUserId) || conv.participants[0]
                                 const isActive = selectedConv?._id === conv._id
 
