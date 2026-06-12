@@ -14,7 +14,7 @@ export const UserProfile = () => {
     const [user , setUser] = useState(null)
     const [posts, setPosts] = useState([])
     const [loading , setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState(null)   
     const [followLoading, setFollowLoading] = useState(false)
 
     // Followers/Following Modal states
@@ -48,7 +48,9 @@ export const UserProfile = () => {
 
     const isFollowing = getFollowingIds().includes(String(id));
 
+    // check followers in currentUser
     const doesHeFollowMe = currentUser?.followers?.some(fid => {
+        // compare followerId with id in URL 
         const idToCompare = typeof fid === 'object' ? (fid._id || fid.id) : fid;
         return String(idToCompare) === String(id);
     });
@@ -57,29 +59,33 @@ export const UserProfile = () => {
         try {
             const { data } = await API.get('/users/profile');
             if (data.success) {
-                dispatch(updateUser(data.user));
+                dispatch(updateUser(data.user)); // update redux
             }
         } catch (error) {
-            console.error("Error fetching my profile", error);
+            toast.error("Failed to refresh profile data")
         }
     };
 
     useEffect(() => {
+        // get currentID from currentUser
         const currentId = currentUser?._id || currentUser?.id;
+
+        // compare currentID with id in URL 
         if (currentId && String(currentId) === String(id)) {
             navigate('/profile')
             return
         }
-        fetchMyProfile()
-        fetchUserProfile()
-        fetchUserPosts()
+        fetchMyProfile() // refresh currentUser latest data
+        fetchUserProfile() // fetch profile of user we are visiting
+        fetchUserPosts() // fetch posts of user we are visiting
     } , [id])
 
     const fetchUserProfile = async () => {
         setLoading(true)
         try {
             const response = await API.get(`/users/${id}`)
-            if (response.data.success) setUser(response.data.user)
+            if (response.data.success) 
+                setUser(response.data.user) // setUser with the user data from response
         } catch (error) {
             setError(error.response?.data?.message || "User not found")
         } finally {
@@ -90,10 +96,10 @@ export const UserProfile = () => {
     const fetchUserPosts = async () => {
         try {
             const response = await API.get(`/posts?userId=${id}`)
-            if (response.data.success) setPosts(response.data.posts)
+            if (response.data.success)  
+                setPosts(response.data.posts) // setPosts with the posts data from response
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to load user posts.");
-            console.error("Error fetching user posts:", error)
         }
     }
 
@@ -266,8 +272,10 @@ export const UserProfile = () => {
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
     const formatDateShort = (dateString) => new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+    // if loading true show spinner
     if (loading) return <div className='text-center py-5'><Spinner animation='border' variant='danger'/></div>
     
+    // if error loading show alert
     if (error) return (
         <Container className='py-5'>
             <Alert variant='danger' className='text-center'>
@@ -297,11 +305,15 @@ export const UserProfile = () => {
                                         <h5 className='mb-0'>{posts.length}</h5>
                                         <small className='text-muted'>Posts</small>
                                     </div>
-                                    <div className='text-center' style={{ cursor: 'pointer' }} onClick={() => setShowFollowersModal(true)}>
+                                    <div className='text-center' style={{ cursor: 'pointer' }} onClick={() => 
+                                        // open followers modal
+                                        setShowFollowersModal(true)}>
                                         <h5 className='mb-0'>{user?.followers?.length || 0}</h5>
                                         <small className='text-muted'>Followers</small>
                                     </div>
-                                    <div className='text-center' style={{ cursor: 'pointer' }} onClick={() => setShowFollowingModal(true)}>
+                                    <div className='text-center' style={{ cursor: 'pointer' }} onClick={() => 
+                                        // open following modal
+                                        setShowFollowingModal(true)}>
                                         <h5 className='mb-0'>{user?.following?.length || 0}</h5>
                                         <small className='text-muted'>Following</small>
                                     </div>
@@ -320,12 +332,16 @@ export const UserProfile = () => {
                                         <Button
                                             variant='outline-primary'
                                             className='rounded-pill px-4'
-                                            onClick={() => navigate('/messages', { state: { openUserId: id, openUser: user } })}
+                                            onClick={() => 
+                                                // open messages page with this user data
+                                                navigate('/messages', { state: { openUserId: id, openUser: user } })}
                                         >
                                             💬 Message
                                         </Button>
                                         <Button 
                                             className={isFollowing ? 'btn-outline-danger rounded-pill px-4' : 'glow-btn'} 
+
+                                            // follow or unfollow to other userProfile
                                             onClick={handleFollowToggle}
                                             disabled={followLoading}
                                         >
@@ -352,15 +368,24 @@ export const UserProfile = () => {
                                         <hr />
                                         <div className='d-flex justify-content-around post-actions'>
                                             <div className="d-flex flex-column align-items-center">
-                                                <Button className='action-btn' onClick={() => handleLike(post._id)}>
+                                                <Button className='action-btn'
+                                                
+                                                // like or unlike post
+                                                onClick={() => handleLike(post._id)}>
                                                     <GoHeart className="me-2" />
                                                     {post.likesCount || 0} Like{post.likesCount !== 1 ? 's' : ''}
                                                 </Button>
                                                 {post.likesCount > 0 && (
-                                                    <span className="text-muted small mt-1" style={{ cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => fetchLikes(post._id)}>View who liked</span>
+                                                    <span className="text-muted small mt-1" style={{ cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => 
+
+                                                        // open likes modal
+                                                        fetchLikes(post._id)}>View who liked</span>
                                                 )}
                                             </div>
-                                            <Button className='action-btn' style={{ height: 'fit-content' }} onClick={() => toggleComments(post._id)}>
+                                            <Button className='action-btn' style={{ height: 'fit-content' }} onClick={() => 
+
+                                                // open comments modal
+                                                toggleComments(post._id)}>
                                                 <FaRegComment className="me-2" />
                                                 {post.commentsCount || 0} Comment{post.commentsCount !== 1 ? 's' : ''}
                                             </Button>
@@ -371,8 +396,14 @@ export const UserProfile = () => {
                                             <div className="mt-4 pt-3 border-top">
                                                 <h6 className="fw-bold mb-3 text-muted">Comments</h6>
                                                 <div className="d-flex gap-2 mb-4">
-                                                    <Form.Control type="text" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} className="rounded-pill border-0 px-3" style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }} />
-                                                    <Button variant="primary" className="rounded-pill px-4" onClick={() => submitComment(post._id)}>Post</Button>
+                                                    <Form.Control type="text" placeholder="Write a comment..." value={commentText} 
+
+                                                    // store comment text in state
+                                                    onChange={(e) => setCommentText(e.target.value)} className="rounded-pill border-0 px-3" style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }} />
+                                                    <Button variant="primary" className="rounded-pill px-4" onClick={() => 
+
+                                                        // add comment
+                                                        submitComment(post._id)}>Post</Button>
                                                 </div>
                                                 {fetchingComments ? (
                                                     <div className="text-center my-3"><Spinner animation="border" size="sm" /></div>
@@ -409,15 +440,18 @@ export const UserProfile = () => {
                                                                     </div>
                                                                     <div className="d-flex gap-3 mt-1 ms-2" style={{ fontSize: '0.8rem' }}>
                                                                         <span className="text-muted">{formatDateShort(comment.createdAt)}</span>
-                                                                        <span className="text-primary" style={{ cursor: 'pointer' }} onClick={() => setActiveReplyId(activeReplyId === comment._id ? null : comment._id)}>Reply</span>
+                                                                        <span className="text-primary" style={{ cursor: 'pointer' }} onClick={() => // toggle reply input for this comment
+                                                                            setActiveReplyId(activeReplyId === comment._id ? null : comment._id)}>Reply</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             {activeReplyId === comment._id && (
                                                                 <div className="d-flex gap-2 mt-2 ms-5">
-                                                                    <Form.Control size="sm" type="text" placeholder="Write a reply..." value={replyText} onChange={(e) => setReplyText(e.target.value)} className="rounded-pill border-0 px-3" style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }} />
-                                                                    <Button size="sm" variant="secondary" className="rounded-pill px-3" onClick={() => submitReply(comment._id, post._id)}>Reply</Button>
+                                                                    <Form.Control size="sm" type="text" placeholder="Write a reply..." value={replyText} onChange={(e) => // store reply text in state
+                                                                        setReplyText(e.target.value)} className="rounded-pill border-0 px-3" style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }} />
+                                                                    <Button size="sm" variant="secondary" className="rounded-pill px-3" onClick={() => // add reply to this comment
+                                                                        submitReply(comment._id, post._id)}>Reply</Button>
                                                                 </div>
                                                             )}
 

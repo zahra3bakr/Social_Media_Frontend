@@ -298,7 +298,7 @@ export const PostDetails = () => {
                                             </Button>
                                             {(post?.likesCount > 0) && (
                                                 <span
-                                                    className="text-muted small mt-1 text-decoration-underline"
+                                                    className="text-muted small mt-1 text-decoration-none"
                                                     style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                                                     onClick={() => fetchLikes()}
                                                 >

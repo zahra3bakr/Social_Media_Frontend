@@ -9,13 +9,13 @@ import { toast } from 'react-hot-toast'
 import '../../Sass/style.scss'
 
 export const Messages = () => {
-    const [messages, setMessages] = useState([])
-    const [conversations, setConversations] = useState([])
-    const [selectedConv, setSelectedConv] = useState(null)
-    const [selectedUser, setSelectedUser] = useState(null)
-    const [newMessage, setNewMessage] = useState("")
-    const [search, setSearch] = useState("")
-    const messagesEndRef = useRef(null)
+    const [messages, setMessages] = useState([]) // store current chat messages
+    const [conversations, setConversations] = useState([]) // store list of conversations for left sidebar
+    const [selectedConv, setSelectedConv] = useState(null) // current Conversation
+    const [selectedUser, setSelectedUser] = useState(null) // user we are chatting with
+    const [newMessage, setNewMessage] = useState("") // current message input
+    const [search, setSearch] = useState("") // search term for filtering conversations
+    const messagesEndRef = useRef(null) // ref to scroll to bottom of messages
 
     // Edit Message States
     const [showEditModal, setShowEditModal] = useState(false)
@@ -23,86 +23,105 @@ export const Messages = () => {
     const [editMessageText, setEditMessageText] = useState("")
     const [editLoading, setEditLoading] = useState(false)
 
+    // get current user from Redux store
     const { user: currentUser } = useSelector((state) => state.auth)
     const currentUserId = currentUser?._id || currentUser?.id
+
+    // get currentNavigate data 
     const location = useLocation()
 
     useEffect(() => {
+        // fetch all conversations 
         fetchConversations()
-    }, [])
+    }, [])  // [] -> only run once 
 
-    // Auto-open chat when navigated from UserProfile with state
+    // Auto-open chat when navigated from UserProfile
     useEffect(() => {
         const { openUserId, openUser } = location.state || {}
         if (openUserId && openUser) {
             // Set the user immediately so the chat panel opens
             setSelectedUser(openUser)
-            // Fetch messages for this user
+
+            // Fetch messages for this user & me
             fetchMessagesByUserId(openUserId)
-            // Clear the state so refresh doesn't re-trigger
+
+            // Clear the state so refresh doesn't re-trigger 
             window.history.replaceState({}, document.title)
         }
     }, [location.state])
 
+    // scroll for last message when messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
+    // fetch all conversations for sidebar
+    // runs after sending message , editing/deleting message , deleting conversation 
     const fetchConversations = async () => {
         try {
             const { data } = await API.get('/messages/conversations')
-            setConversations(data)
+            setConversations(data) // store conversations
         } catch (error) {
-            console.error("Error fetching conversations:", error)
+            toast.error("Failed to load conversations")
         }
     }
 
+    // fetch messages for selected conversation
     const fetchMessages = async (conv) => {
+        // find the other participantId in the conversation 
         const otherUser = conv.participants.find(p => p._id !== currentUserId) || conv.participants[0]
         try {
+            // call from left panel to open chat in right panel 
             const { data } = await API.get(`/messages/${otherUser._id}`)
-            setMessages(data)
-            setSelectedUser(otherUser)
-            setSelectedConv(conv)
+            setMessages(data) // store messages
+            setSelectedUser(otherUser) // store other user
+            setSelectedConv(conv) // store conversation
         } catch (error) {
-            console.error("Error fetching messages:", error)
+            toast.error("Failed to load messages for this conversation")
         }
     }
 
-    // Called when opening chat directly from UserProfile via navigation state
+    // Called when opening chat directly from UserProfile 
     const fetchMessagesByUserId = async (userId) => {
         try {
             const { data } = await API.get(`/messages/${userId}`)
-            setMessages(data)
+            setMessages(data) // store messages
         } catch (error) {
-            console.error("Error fetching messages by userId:", error)
+            toast.error("Failed to load messages for this conversation")
         }
     }
 
+    // sending new message 
     const handleSendMessage = async (e) => {
         e.preventDefault()
+
+        // validation - no empty messages & must select a chat
         if (!newMessage.trim() || !selectedUser) return
 
         try {
+            // select user + send new message to backend
             const { data } = await API.post(`/messages/send/${selectedUser._id}`, { message: newMessage })
             if (data.success) {
-                setMessages(prev => [...prev, data.newMessage])
-                setNewMessage("")
-                fetchConversations()
+                setMessages(prev => [...prev, data.newMessage]) // add new message + store it in array
+                setNewMessage("") // clear input field
+                fetchConversations() // refresh sidebar to show latest message
             }
         } catch (error) {
-            console.error("Error sending message:", error)
+            toast.error("Failed to send message")
         }
     }
 
+    // edit message 
     const handleEditMessage = (msg) => {
-        setEditingMessage(msg)
-        setEditMessageText(msg.message)
-        setShowEditModal(true)
+        setEditingMessage(msg) // store message
+        setEditMessageText(msg.message) // edit message & add it with the old message text
+        setShowEditModal(true) // open edit modal 
     }
 
+    // after editing message & click save changes
     const handleUpdateSubmit = async (e) => {
         e.preventDefault()
+        // validation - no empty messages
         if (!editMessageText.trim()) return
 
         try {
@@ -110,9 +129,10 @@ export const Messages = () => {
             const { data } = await API.put(`/messages/update/${editingMessage._id}`, { message: editMessageText })
             if (data.success) {
                 toast.success("Message updated!")
+                //map & update the new message instead of the old one 
                 setMessages(prev => prev.map(m => m._id === editingMessage._id ? data.updatedMessage : m))
-                setShowEditModal(false)
-                fetchConversations() // Sync with sidebar
+                setShowEditModal(false)  // close modal after editing9
+                fetchConversations() // refresh sidebar
             }
         } catch (error) {
             toast.error("Failed to update message")
@@ -121,20 +141,23 @@ export const Messages = () => {
         }
     }
 
+    // delete single message
     const handleDeleteMessage = async (msgId) => {
+        // confirm delete action 
         if (!window.confirm("Are you sure you want to delete this message?")) return
         try {
             const { data } = await API.delete(`/messages/delete/${msgId}`)
             if (data.success) {
                 toast.success("Message deleted!")
-                setMessages(prev => prev.filter(m => m._id !== msgId))
-                fetchConversations() // Sync with sidebar
+                setMessages(prev => prev.filter(m => m._id !== msgId)) // remove deleted message from UI
+                fetchConversations() // refresh sidebar
             }
         } catch (error) {
             toast.error("Failed to delete message")
         }
     }
 
+    // delete entire conversation
     const handleDeleteConversation = async () => {
         if (!selectedConv) return
         if (!window.confirm("Are you sure you want to delete the entire conversation? This cannot be undone.")) return
@@ -143,16 +166,17 @@ export const Messages = () => {
             const { data } = await API.delete(`/messages/conversation/delete/${selectedConv._id}`)
             if (data.success) {
                 toast.success("Conversation deleted!")
-                setSelectedUser(null)
-                setSelectedConv(null)
-                setMessages([])
-                fetchConversations()
+                setSelectedUser(null) // close chat panel
+                setSelectedConv(null) // clear selected conversation 
+                setMessages([]) // clear messages from right panel
+                fetchConversations() // refresh left sidebar
             }
         } catch (error) {
             toast.error("Failed to delete conversation")
         }
     }
-
+ 
+    
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()

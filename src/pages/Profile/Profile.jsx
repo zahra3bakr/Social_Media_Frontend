@@ -146,6 +146,7 @@ export const Profile = () => {
     }
 
 
+    // when user update new profilePicture
     const handleFileChange = (e) => {
         const file = e.target.files[0]
         if (file) {
@@ -154,12 +155,14 @@ export const Profile = () => {
         }
     }
 
+    // update profile info
     const handleUpdate = async (e) => {
         e.preventDefault()
         setEditLoading(true)
 
         try {
             const formData = new FormData()
+            // append -> add
             formData.append('username', username)
             formData.append('email', email)
             formData.append('bio', bio)
@@ -175,11 +178,11 @@ export const Profile = () => {
 
             if (response.data.success) {
                 toast.success("Profile updated successfully!")
-                setUser(response.data.user)
-                dispatch(updateUser(response.data.user))
-                setShowEditModal(false)
-                setSelectedFile(null)
-                setPreviewUrl(null)
+                setUser(response.data.user) // update in state
+                dispatch(updateUser(response.data.user)) // update in redux
+                setShowEditModal(false) // close modal
+                setSelectedFile(null) // clear selected file
+                setPreviewUrl(null) // clear preview URL
             }
         } catch (error) {
             console.error("Update error:", error)
@@ -190,23 +193,22 @@ export const Profile = () => {
     }
 
     const handleRemovePhoto = async () => {
-        // If there's a new unsaved photo selected, just clear the preview/selection
         if (previewUrl || selectedFile) {
-            setPreviewUrl(null);
-            setSelectedFile(null);
-            if (fileInputRef.current) fileInputRef.current.value = "";
+            setPreviewUrl(null); // clear preview
+            setSelectedFile(null); // clear selected file
+            if (fileInputRef.current) fileInputRef.current.value = ""; // clear file input
             return;
         }
 
-        // If there's an existing saved photo on the server, delete it
+        // if not still saved
         if (user?.profilePicture) {
             if (window.confirm("Are you sure you want to remove your profile picture?")) {
                 try {
                     const response = await API.delete('/users/profile/picture');
                     if (response.data.success) {
                         toast.success("Profile picture removed!");
-                        setUser(response.data.user);
-                        dispatch(updateUser(response.data.user));
+                        setUser(response.data.user); // update in state
+                        dispatch(updateUser(response.data.user)); // update in redux
                     }
                 } catch (error) {
                     toast.error("Failed to remove profile picture");
@@ -215,13 +217,14 @@ export const Profile = () => {
         }
     }
 
+    // fetch followers list
     const fetchFollowers = async () => {
         setListLoading(true)
         try {
             const response = await API.get('/users/followers')
             if (response.data.success) {
-                setFollowersList(response.data.followers)
-                setShowFollowersModal(true)
+                setFollowersList(response.data.followers) // set followers list in state
+                setShowFollowersModal(true) // open modal
             }
         } catch (error) {
             toast.error("Failed to load followers")
@@ -230,13 +233,14 @@ export const Profile = () => {
         }
     }
 
+    // fetch following list
     const fetchFollowing = async () => {
         setListLoading(true)
         try {
             const response = await API.get('/users/following')
             if (response.data.success) {
-                setFollowingList(response.data.following)
-                setShowFollowingModal(true)
+                setFollowingList(response.data.following) // set following list in state
+                setShowFollowingModal(true) // open modal
             }
         } catch (error) {
             toast.error("Failed to load following")
@@ -245,14 +249,15 @@ export const Profile = () => {
         }
     }
 
+    // fetch current userProfile posts 
     const fetchUserPosts = async () => {
         try {
             const response = await API.get(`/posts?userId=${user?._id}`)
             if (response.data.success) {
-                setUserPosts(response.data.posts)
+                setUserPosts(response.data.posts) // set user posts in state
             }
         } catch (error) {
-            console.error("Error fetching user posts:", error)
+            toast.error("Failed to load user's posts")
         }
     }
 
