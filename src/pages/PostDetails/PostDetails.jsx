@@ -10,17 +10,22 @@ import toast from 'react-hot-toast';
 import '../../Sass/style.scss';
 
 export const PostDetails = () => {
-    const { id } = useParams();
+    const { id } = useParams(); // Get post ID from URL
     const navigate = useNavigate();
-    const [post, setPost] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [comments, setComments] = useState([]);
-    const [fetchingComments, setFetchingComments] = useState(false);
-    const [commentText, setCommentText] = useState("");
-    const [replyText, setReplyText] = useState("");
-    const [activeReplyId, setActiveReplyId] = useState(null);
+    const [post, setPost] = useState(null); // Store post details
+    const [loading, setLoading] = useState(true); // Loading state for post
+    const [comments, setComments] = useState([]); // Store comments
+    const [fetchingComments, setFetchingComments] = useState(false); // Loading state for comments
+    const [commentText, setCommentText] = useState(""); // New comment text
+    const [replyText, setReplyText] = useState(""); // New reply text
+    const [activeReplyId, setActiveReplyId] = useState(null); 
 
     const { user: currentUser } = useSelector((state) => state.auth);
+
+    // Likes Modal
+    const [showLikesModal, setShowLikesModal] = useState(false);
+    const [likesList, setLikesList] = useState([]);
+    const [fetchingLikes, setFetchingLikes] = useState(false);
 
     // Edit Post States
     const [showEditModal, setShowEditModal] = useState(false);
@@ -34,10 +39,11 @@ export const PostDetails = () => {
     const [editCommentLoading, setEditCommentLoading] = useState(false);
 
     useEffect(() => {
-        fetchPost();
-        fetchComments();
+        fetchPost(); // Fetch post details
+        fetchComments(); // Fetch comments for the post
     }, [id]);
 
+    // Fetch post details from API
     const fetchPost = async () => {
         try {
             setLoading(true);
@@ -65,6 +71,22 @@ export const PostDetails = () => {
             console.error("Error fetching comments:", error);
         } finally {
             setFetchingComments(false);
+        }
+    };
+
+    const fetchLikes = async () => {
+        try {
+            setFetchingLikes(true);
+            setShowLikesModal(true);
+            const { data } = await API.get(`/posts/likes/${id}`);
+            if (data.success) {
+                setLikesList(data.likes);
+            }
+        } catch (error) {
+            console.error("Error fetching likes:", error);
+            toast.error("Failed to load likes.");
+        } finally {
+            setFetchingLikes(false);
         }
     };
 
@@ -268,14 +290,25 @@ export const PostDetails = () => {
                                     )}
 
                                     <hr />
-                                    <div className="d-flex justify-content-around">
-                                        <Button className="action-btn like-btn" onClick={handleLike}>
-                                            <GoHeart className="me-2" />
-                                            {post.likesCount || 0} Likes
-                                        </Button>
-                                        <Button className="action-btn comment-btn">
+                                    <div className="d-flex justify-content-around post-actions position-relative">
+                                        <div className="d-flex flex-column align-items-center">
+                                            <Button className="action-btn like-btn" onClick={handleLike}>
+                                                <GoHeart className="me-2" />
+                                                {post.likesCount || 0} Like{(post.likesCount !== 1) ? 's' : ''}
+                                            </Button>
+                                            {(post?.likesCount > 0) && (
+                                                <span
+                                                    className="text-muted small mt-1 text-decoration-underline"
+                                                    style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                                                    onClick={() => fetchLikes()}
+                                                >
+                                                    View who liked
+                                                </span>
+                                            )}
+                                        </div>
+                                        <Button className="action-btn comment-btn" style={{ height: 'fit-content' }}>
                                             <FaRegComment className="me-2" />
-                                            {post.commentsCount || 0} Comments
+                                            {post.commentsCount || 0} Comment{(post.commentsCount !== 1) ? 's' : ''}
                                         </Button>
                                     </div>
                                 </Card.Body>
@@ -440,6 +473,39 @@ export const PostDetails = () => {
                             </Button>
                         </div>
                     </Form>
+                </Modal.Body>
+            </Modal>
+
+            {/* Likes Modal */}
+            <Modal show={showLikesModal} onHide={() => setShowLikesModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Likes</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {fetchingLikes ? (
+                        <div className="text-center my-4">
+                            <Spinner animation="border" variant="primary" />
+                        </div>
+                    ) : likesList.length === 0 ? (
+                        <div className="text-center text-muted my-4">
+                            No likes yet.
+                        </div>
+                    ) : (
+                        <div className="likes-list">
+                            {likesList.map(like => (
+                                <div key={like._id} className="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom" style={{ cursor: 'pointer' }} onClick={() => { setShowLikesModal(false); if (like.userId?._id) navigate(`/user-profile/${like.userId._id}`); }}>
+                                    {like.userId?.profilePicture ? (
+                                        <img src={getImageUrl(like.userId.profilePicture)} alt="Avatar" className='rounded-circle' style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div className='bg-primary text-white d-flex justify-content-center align-items-center rounded-circle' style={{ width: '40px', height: '40px', fontSize: '1rem', textTransform: 'uppercase' }}>
+                                            {like.userId?.username?.charAt(0) || 'U'}
+                                        </div>
+                                    )}
+                                    <span className="fw-bold">{like.userId?.username || 'Unknown User'}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </Modal.Body>
             </Modal>
         </Container>

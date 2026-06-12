@@ -184,18 +184,21 @@ export const Home = () => {
     }
   };
 
+  // Photo/Video btn -> trigger file input click
   const handleImageClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
+  // Store the selected image in state when user selects a file from the file input
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setImage(e.target.files[0]);
     }
   };
 
+  // like or unlike the post -> toggle
   const handleLike = async (postId) => {
     try {
       const { data } = await API.patch(`/posts/like/${postId}`);
@@ -219,13 +222,14 @@ export const Home = () => {
     }
   };
 
+  // View who liked the post & open the modal
   const fetchLikes = async (postId) => {
     try {
       setFetchingLikes(true);
       setShowLikesModal(true);
       const { data } = await API.get(`/posts/likes/${postId}`);
       if (data.success) {
-        setLikesList(data.likes);
+        setLikesList(data.likes); // store likes in likesList state
       }
     } catch (error) {
       console.error("Error fetching likes", error);
@@ -238,8 +242,8 @@ export const Home = () => {
   // if comments opened pls close it & otherwise
   const toggleComments = async (postId) => {
     if (expandedPostId === postId) {
-      setExpandedPostId(null);
-      setPostComments([]);
+      setExpandedPostId(null); // close it
+      setPostComments([]); // clear comments
       return;
     }
     setExpandedPostId(postId);
@@ -248,28 +252,29 @@ export const Home = () => {
 
   const fetchComments = async (postId) => {
     try {
-      setFetchingComments(true);
+      setFetchingComments(true); // Set loading state
       const { data } = await API.get(`/posts/postcomment/${postId}`);
       if (data.success) {
-        setPostComments(data.comments);
+        setPostComments(data.comments); // store comments in postComments state
       }
     } catch (error) {
       console.error("Error fetching comments", error);
       toast.error("Failed to load comments.");
     } finally {
-      setFetchingComments(false);
+      setFetchingComments(false); // Reset loading state
     }
   };
 
   const submitComment = async (postId) => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim()) return; // empty comments
     try {
       const { data } = await API.post(`/posts/comment/${postId}`, { text: commentText });
       if (data.success) {
         toast.success("Comment added!");
-        setCommentText("");
-        fetchComments(postId);
-        // Optimistically update comment count immediately in UI
+        setCommentText(""); // clear inputs
+        fetchComments(postId); // Refresh comments
+
+        // +1 commentsCount in UI
         setPosts(posts.map(p => p._id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p));
       }
     } catch (error) {
@@ -279,15 +284,16 @@ export const Home = () => {
   };
 
   const submitReply = async (commentId, postId) => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim()) return; // empty replies
     try {
       const { data } = await API.post(`/posts/comment/${commentId}/reply`, { text: replyText });
       if (data.success) {
         toast.success("Reply added!");
-        setReplyText("");
-        setActiveReplyId(null);
+        setReplyText(""); // clear inputs
+        setActiveReplyId(null); // clear active reply
         fetchComments(postId); // Refresh comments to show new reply
-        // Optimistically update comment count
+
+        // +1 commentsCount in UI
         setPosts(posts.map(p => p._id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p));
       }
     } catch (error) {
@@ -316,17 +322,18 @@ export const Home = () => {
   };
 
   const handleUpdateComment = (commentId, postId) => {
+    // Find the parent comment if not search by flatMap
     const comment = postComments.find(c => c._id === commentId) || postComments.flatMap(c => c.replies || []).find(r => r._id === commentId);
     if (!comment) return;
     
-    setEditingComment(comment);
-    setEditCommentText(comment.text);
-    setEditingCommentPostId(postId);
-    setShowEditCommentModal(true);
+    setEditingComment(comment); // store the current comment
+    setEditCommentText(comment.text); // store the old text
+    setEditingCommentPostId(postId); // store the post id 
+    setShowEditCommentModal(true); // open the modal
   };
 
   const handleCommentEditSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // prevent page reload 
     if (!editCommentText.trim()) {
       toast.error("Comment cannot be empty!");
       return;
@@ -336,8 +343,8 @@ export const Home = () => {
       const { data } = await API.put(`/posts/comment/${editingComment._id}`, { text: editCommentText });
       if (data.success) {
           toast.success("Comment updated!");
-          setShowEditCommentModal(false);
-          fetchComments(editingCommentPostId);
+          setShowEditCommentModal(false); // close Modal
+          fetchComments(editingCommentPostId); // refresh comments
       }
     } catch (error) {
       console.error("Error updating comment", error);
@@ -361,9 +368,9 @@ export const Home = () => {
   };
 
   const handleShowEditModal = (post) => {
-    setEditingPost(post);
-    setEditContent(post.content);
-    setShowEditModal(true);
+    setEditingPost(post); // store in edeitingPost state
+    setEditContent(post.content); // put old content in editContent state
+    setShowEditModal(true); // open Modal
   };
 
   const handleEditSubmit = async (e) => {
@@ -377,7 +384,7 @@ export const Home = () => {
       const { data } = await API.put(`/posts/update/${editingPost._id}`, { content: editContent });
       if (data.success) {
         toast.success("Post updated successfully!");
-        setPosts(posts.map(p => p._id === editingPost._id ? { ...p, content: editContent } : p));
+        setPosts(posts.map(p => p._id === editingPost._id ? { ...p, content: editContent } : p)); // update UI
         setShowEditModal(false);
       }
     } catch (error) {
@@ -390,15 +397,18 @@ export const Home = () => {
 
   // Helper functions -> for formatting time & image
   const formatDate = (dateString) => {
+    // take dataString from backend & make from it Date 
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    // convert Date to readable format date
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
+    // image URL
     return `${BASE_URL}${imagePath}`;
   };
-
+ 
   return (
     <div className='home-wrapper'>
       <Container>
@@ -437,6 +447,7 @@ export const Home = () => {
                     placeholder="What's on your mind?"
                     className="post-input mb-3"
                     value={content}
+                    // when user types in textarea update content state
                     onChange={(e) => setContent(e.target.value)}
                   />
 
@@ -501,6 +512,7 @@ export const Home = () => {
                             variant={checkIsFollowing(post.userId?._id) ? "outline-secondary" : "outline-primary"} 
                             className="rounded-pill px-3 fw-bold"
                             onClick={(e) => {
+                              // stop click navigate 
                               e.stopPropagation();
                               handleFollow(post.userId?._id);
                             }}
@@ -538,10 +550,10 @@ export const Home = () => {
                           <GoHeart className="me-2" />
                           {post.likesCount || 0} Like{(post.likesCount !== 1) ? 's' : ''}
                         </Button>
-                        {(post.likesCount > 0) && (
+                        {(post?.likesCount > 0) && (
                           <span
-                            className="text-muted small mt-1 primary-red"
-                            style={{ cursor: 'pointer', textDecoration: 'none', fontSize: '0.75rem' }}
+                            className="text-muted small mt-1 text-decoration-underline"
+                            style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                             onClick={() => fetchLikes(post._id)}
                           >
                             View who liked
@@ -565,6 +577,7 @@ export const Home = () => {
                             type="text"
                             placeholder="Write a comment..."
                             value={commentText}
+                            // update text comment 
                             onChange={(e) => setCommentText(e.target.value)}
                             className="rounded-pill border-0 px-3"
                             style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }}
@@ -608,7 +621,10 @@ export const Home = () => {
                                   </div>
                                   <div className="d-flex gap-3 mt-1 ms-2" style={{ fontSize: '0.8rem' }}>
                                     <span className="text-muted">{formatDate(comment.createdAt)}</span>
-                                    <span className="text-primary" style={{ cursor: 'pointer' }} onClick={() => setActiveReplyId(activeReplyId === comment._id ? null : comment._id)}>Reply</span>
+                                    <span className="text-primary" style={{ cursor: 'pointer' }}
+
+                                    // close / open reply input 
+                                    onClick={() => setActiveReplyId(activeReplyId === comment._id ? null : comment._id)}>Reply</span>
                                   </div>
                                 </div>
                               </div>
@@ -621,11 +637,16 @@ export const Home = () => {
                                     type="text"
                                     placeholder="Write a reply..."
                                     value={replyText}
+
+                                    // update reply text
                                     onChange={(e) => setReplyText(e.target.value)}
                                     className="rounded-pill border-0 px-3"
                                     style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }}
                                   />
-                                  <Button size="sm" variant="secondary" className="rounded-pill px-3" onClick={() => submitReply(comment._id, post._id)}>Reply</Button>
+                                  <Button size="sm" variant="secondary" className="rounded-pill px-3" 
+
+                                  // add reply 
+                                  onClick={() => submitReply(comment._id, post._id)}>Reply</Button>
                                 </div>
                               )}
 
@@ -728,7 +749,10 @@ export const Home = () => {
       </Container>
 
       {/* Likes Modal */}
-      <Modal show={showLikesModal} onHide={() => setShowLikesModal(false)} centered>
+      <Modal show={showLikesModal} 
+
+      // close like modal 
+      onHide={() => setShowLikesModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Likes</Modal.Title>
         </Modal.Header>
@@ -761,7 +785,10 @@ export const Home = () => {
       </Modal>
       
       {/* Edit Post Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+      <Modal show={showEditModal} 
+      
+      // close edit post modal
+      onHide={() => setShowEditModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit Post</Modal.Title>
         </Modal.Header>
@@ -772,13 +799,18 @@ export const Home = () => {
                 as="textarea"
                 rows={4}
                 value={editContent}
+
+                // update editContent of post
                 onChange={(e) => setEditContent(e.target.value)}
                 className="border-0 rounded-3"
                 style={{ resize: 'none', backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }}
               />
             </Form.Group>
             <div className="d-flex justify-content-end">
-              <Button variant="secondary" className="me-2 rounded-pill px-4" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button variant="secondary" className="me-2 rounded-pill px-4" 
+
+              // canvel for post edit
+              onClick={() => setShowEditModal(false)}>Cancel</Button>
               <Button variant="primary" type="submit" className="glow-btn px-4" disabled={editLoading}>
                 {editLoading ? <Spinner animation="border" size="sm" /> : 'Save Changes'}
               </Button>
@@ -787,7 +819,10 @@ export const Home = () => {
         </Modal.Body>
       </Modal>
       {/* Edit Comment Modal */}
-      <Modal show={showEditCommentModal} onHide={() => setShowEditCommentModal(false)} centered>
+      <Modal show={showEditCommentModal} 
+
+      // close edit comment modal
+      onHide={() => setShowEditCommentModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit Comment</Modal.Title>
         </Modal.Header>
@@ -798,6 +833,8 @@ export const Home = () => {
                 as="textarea"
                 rows={3}
                 value={editCommentText}
+
+                // update editCommentText of comment
                 onChange={(e) => setEditCommentText(e.target.value)}
                 className="border-0 rounded-3"
                 style={{ resize: 'none', backgroundColor: 'var(--input-bg)', color: 'var(--text-color)' }}
