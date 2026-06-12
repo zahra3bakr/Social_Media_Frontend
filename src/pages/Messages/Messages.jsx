@@ -176,14 +176,15 @@ export const Messages = () => {
         }
     }
  
-    
+    // enter -> send message (without shift + enter) 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
-            handleSendMessage(e)
+            handleSendMessage(e) // call send message function
         }
     }
 
+    // filter conversations based on search term even written by lowercase
     const filteredConversations = conversations.filter(conv => {
         const other = conv.participants.find(p => p._id !== currentUserId) || conv.participants[0]
         return other?.username?.toLowerCase().includes(search.toLowerCase())
@@ -205,7 +206,7 @@ export const Messages = () => {
                         <p className="chat-list-sub">{conversations.length} conversations</p>
                     </div>
 
-                    <div className="chat-search-wrapper">
+                    <label className="chat-search-wrapper" style={{ cursor: 'text' }}>
                         <span className="search-icon">🔍</span>
                         <input
                             className="chat-search-input"
@@ -214,7 +215,7 @@ export const Messages = () => {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
-                    </div>
+                    </label>
 
                     <div className="chat-list-body">
                         {filteredConversations.length === 0 ? (
