@@ -6,7 +6,7 @@ export const UserContext = createContext(null)
 // receive any component as children
 export function UserProvider ({children}){
     const [theme , setTheme] = useState('light')
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(null) // user data
 
 
     const toggleTheme = () => {
@@ -14,7 +14,7 @@ export function UserProvider ({children}){
         setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
     };
 
-    // user data
+    // update user data
     const updateUser = (newUserData) => {
         setUser((prevUser) => ({ ...prevUser, ...newUserData }));
     };

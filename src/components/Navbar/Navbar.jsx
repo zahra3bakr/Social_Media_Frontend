@@ -12,47 +12,55 @@ import { ThemeToggle } from '../ThemeToggle/ThemeToggle'
 
 export const Navbar = () => {
     const navigate = useNavigate()
-    const location = useLocation()
-    const dispatch = useDispatch()
-    const isDarkMode = useSelector(selectIsDarkMode)
+    const location = useLocation() // get current location
+    const dispatch = useDispatch() // send action
+    const isDarkMode = useSelector(selectIsDarkMode) // get data
     const { isLoggedIn, user, savedAccounts } = useSelector((state) => state.auth)
     const [searchTerm, setSearchTerm] = useState('')
     const [unreadCount, setUnreadCount] = useState(0)
 
     useEffect(() => {
+        // If user is logged in, fetch unread notification count
         if (isLoggedIn) {
             fetchUnreadCount()
         }
-    }, [isLoggedIn, location.pathname])
+    },
+    // fixed in all pages 
+    [isLoggedIn, location.pathname])
 
+    // fetch unread notification count
     const fetchUnreadCount = async () => {
         try {
             const { data } = await API.get('/notifications');
             if (data.success) {
+                //filter & Count the number of unread notifications(.length)
                 const unread = data.notifications.filter(n => !n.isRead).length;
                 setUnreadCount(unread);
             }
         } catch (error) {
-            console.error("Error fetching notification count:", error);
+            toast.error("Failed to load notifications");
         }
     }
 
+    // handle search
     const handleSearch = (e) => {
         e.preventDefault()
         if (searchTerm.trim()) {
+            // if search term is not empty 
+            // encodeURIComponent to handle special characters(% & ? #)
             navigate(`/search?q=${encodeURIComponent(searchTerm)}`)
         }
     }
 
     const handleLogout = () => {
-        dispatch(logout())
+        dispatch(logout()) // state from authSlice
         navigate('/Login')
     }
 
     const handleSwitchAccount = (account) => {
         if (account.user._id === user?._id) return; // Already active
         dispatch(switchAccount(account));
-        window.location.reload(); // Reload to refresh feed and state for the new user
+        window.location.reload(); // full Reload for page 
     }
 
     const expand = "md";
@@ -141,14 +149,20 @@ export const Navbar = () => {
 
                             <div className="ms-md-auto mt-3 mt-md-0 d-flex w-100 w-md-auto justify-content-start justify-content-md-end align-items-center gap-3">
                                 <ThemeToggle />
+                                
                                 {isLoggedIn ? (
                                     <NavDropdown 
                                         title={
                                             <div className="d-flex align-items-center gap-2" style={{ display: 'inline-flex' }}>
                                                 {user?.profilePicture ? (
+
+                                                    // Display user's profile picture
                                                     <img src={`${BASE_URL}${user.profilePicture}`} alt="Avatar" className='rounded-circle border border-2 border-danger' style={{width: '40px', height: '40px', objectFit: 'cover'}} />
                                                 ) : (
+                                                    // Display user's initials
                                                     <div className='bg-primary text-white d-flex justify-content-center align-items-center rounded-circle border border-2 border-danger' style={{width: '40px', height: '40px', fontSize: '1.2rem', textTransform: 'uppercase'}}>
+                                                        
+                                                        {/* Display the first letter of the username */}
                                                         {user?.username?.charAt(0) || 'U'}
                                                     </div>
                                                 )}

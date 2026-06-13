@@ -1,43 +1,46 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Check if user is already logged in from localStorage
+// read data from localStorage
 const userToken = localStorage.getItem('userToken');
 const userInfo = localStorage.getItem('userInfo');
 
-// Get saved Accounts Array (switch accounts feature)
+// savedAccounts (switch accounts)
 const savedAccountsStr = localStorage.getItem('savedAccounts');
 let savedAccounts = [];
 try {
-    // parse for json which coming from localStorage
-    const rawAccounts = savedAccountsStr ? JSON.parse(savedAccountsStr) : [];
-    // check uniqueness by ID (check both _id and id)
+    const rawAccounts = savedAccountsStr ? JSON.parse(savedAccountsStr) : []; // parse text to array
+
+    // remove duplicates by id for each account
     const uniqueMap = new Map();
     rawAccounts.forEach(acc => {
-        const uid = acc.user?._id || acc.user?.id;
+        const uid = acc.user?._id || acc.user?.id; // get id
+
+        // check if id already exists
         if (uid) {
             uniqueMap.set(String(uid), acc);
         }
     });
+
     // convert map to array
     savedAccounts = Array.from(uniqueMap.values());
 } catch (e) {
     savedAccounts = [];
 }
 
-
+// savedAccounts for single user
 let parsedUser = null;
 try {
-    // parse for userInfo
     parsedUser = userInfo ? JSON.parse(userInfo) : null;
 } catch (e) {
     parsedUser = null;
 }
 
-// check the current user is in savedAccounts if not already
+// check the current user is in savedAccounts 
 if (parsedUser && userToken) {
     const currentId = String(parsedUser._id || parsedUser.id);
     const exists = savedAccounts.find(acc => String(acc.user?._id || acc.user?.id) === currentId);
     if (!exists) {
+        // add current user
         savedAccounts.push({ token: userToken, user: parsedUser });
         localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts));
     }
@@ -47,7 +50,7 @@ const initialState = {
     isLoggedIn: !!userToken, // convert any value to boolean
     token: userToken || null,
     user: parsedUser,
-    savedAccounts: savedAccounts, // array of { token, user }
+    savedAccounts: savedAccounts, 
 };
 
 const authSlice = createSlice({
@@ -60,7 +63,6 @@ const authSlice = createSlice({
             state.token = token;
             state.user = user;
             
-            // Save data in browser so if page reloads, user will be logged in
             localStorage.setItem('userToken', token);
             localStorage.setItem('userInfo', JSON.stringify(user));
 
@@ -68,7 +70,7 @@ const authSlice = createSlice({
             const userId = String(user._id || user.id);
             const existingIndex = state.savedAccounts.findIndex(acc => String(acc.user?._id || acc.user?.id) === userId);
             
-            if (existingIndex >= 0) {
+            if (existingIndex >= 0) {  
                 state.savedAccounts[existingIndex] = { token, user };
             } else {
                 state.savedAccounts.push({ token, user });
@@ -85,7 +87,7 @@ const authSlice = createSlice({
             localStorage.setItem('userToken', token);
             localStorage.setItem('userInfo', JSON.stringify(user));
 
-            // Also update this user in savedAccounts to ensure token/info is fresh
+            // update user in savedAccounts to ensure data is fresh
             const userId = String(user._id || user.id);
             const existingIndex = state.savedAccounts.findIndex(acc => String(acc.user?._id || acc.user?.id) === userId);
             if (existingIndex >= 0) {
@@ -104,7 +106,7 @@ const authSlice = createSlice({
                 const existingIndex = state.savedAccounts.findIndex(acc => String(acc.user?._id || acc.user?.id) === userId);
                 if (existingIndex >= 0) {
                     state.savedAccounts[existingIndex] = {
-                        // changr only user not token 
+                        // change only user not token 
                         ...state.savedAccounts[existingIndex],
                         user: updatedUser
                     };

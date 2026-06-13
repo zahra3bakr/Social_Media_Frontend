@@ -3,9 +3,10 @@ import { toggleTheme, selectIsDarkMode } from '../../redux/slices/themeSlice';
 import { Button } from 'react-bootstrap';
 import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 
+// Toggle between light and dark
 export const ThemeToggle = ({ size = '40px' }) => {
-    const isDarkMode = useSelector(selectIsDarkMode);
-    const dispatch = useDispatch();
+    const isDarkMode = useSelector(selectIsDarkMode); 
+    const dispatch = useDispatch(); 
 
     return (
         <Button 
