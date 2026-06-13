@@ -7,22 +7,28 @@ import { useSelector } from 'react-redux';
 import '../../Sass/style.scss';
 
 export const Search = () => {
+    // read query params from URL
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
+
+    // manage search results
     const [activeTab, setActiveTab] = useState('users');
     const [users, setUsers] = useState([]);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // get current user
     const { user: currentUser } = useSelector((state) => state.auth);
     const currentUserId = currentUser?._id || currentUser?.id;
 
+    // if query changes/ activeTab changes
     useEffect(() => {
         if (query) {
             fetchResults();
         }
-    }, [query, activeTab]);
+    },[query, activeTab]);
 
+    // fetch search results
     const fetchResults = async () => {
         setLoading(true);
         try {
@@ -75,6 +81,7 @@ export const Search = () => {
                         Search results for: <span className="text-danger">"{query}"</span>
                     </h4>
 
+                    {/* if loading=true show spinner & if not show results */}
                     {loading ? (
                         <div className="text-center py-5">
                             <Spinner animation="border" variant="danger" />
@@ -84,12 +91,14 @@ export const Search = () => {
                             {activeTab === 'users' ? (
                                 users.length > 0 ? (
                                     users.map(user => {
+                                        // if me show my profile else show user profile
                                         const isMe = String(user._id) === String(currentUserId);
                                         const profileLink = isMe ? '/profile' : `/user-profile/${user._id}`;
 
                                         return (
                                             <Card key={user._id} className="mb-3 shadow-sm border-0 glass-card">
                                                 <Card.Body className="d-flex align-items-center gap-3">
+                                                    {/* profile picture */}
                                                     <img
                                                         src={user.profilePicture ? `${BASE_URL}${user.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                         alt={user.username}
@@ -100,6 +109,7 @@ export const Search = () => {
                                                         <h6 className="mb-0 fw-bold">{user.name || user.username}</h6>
                                                         <small className="text-muted">@{user.username}</small>
                                                     </div>
+                                                    {/* view profile */}
                                                     <Link to={profileLink} className="ms-auto btn btn-outline-danger btn-sm rounded-pill px-3">
                                                         View Profile
                                                     </Link>
@@ -119,17 +129,24 @@ export const Search = () => {
                                             <Link to={`/post/${post._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                 <Card.Body>
                                                     <div className="d-flex align-items-center gap-2 mb-3">
+                                                        {/* user info data */}
                                                         <img
                                                             src={post.userId.profilePicture ? `${BASE_URL}${post.userId.profilePicture}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                                             alt={post.userId.username}
                                                             className="rounded-circle"
                                                             style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                                                         />
+
+                                                        {/* date of post */}
                                                         <span className="fw-bold">@{post.userId.username}</span>
                                                         <small className="text-muted ms-auto">{new Date(post.createdAt).toLocaleDateString()}</small>
                                                     </div>
+
+                                                    {/* post content */}
                                                     <p className="mb-0">{post.content}</p>
                                                     {post.tags && post.tags.length > 0 && (
+
+                                                        // tags
                                                         <div className="mt-2">
                                                             {post.tags.map((tag, i) => (
                                                                 <span key={i} className="text-primary me-2 small">#{tag}</span>

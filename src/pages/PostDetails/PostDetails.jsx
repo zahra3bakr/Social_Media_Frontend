@@ -12,12 +12,12 @@ import '../../Sass/style.scss';
 export const PostDetails = () => {
     const { id } = useParams(); // Get post ID from URL
     const navigate = useNavigate();
-    const [post, setPost] = useState(null); // Store post details
-    const [loading, setLoading] = useState(true); // Loading state for post
-    const [comments, setComments] = useState([]); // Store comments
-    const [fetchingComments, setFetchingComments] = useState(false); // Loading state for comments
-    const [commentText, setCommentText] = useState(""); // New comment text
-    const [replyText, setReplyText] = useState(""); // New reply text
+    const [post, setPost] = useState(null); 
+    const [loading, setLoading] = useState(true); 
+    const [comments, setComments] = useState([]); 
+    const [fetchingComments, setFetchingComments] = useState(false);
+    const [commentText, setCommentText] = useState("");
+    const [replyText, setReplyText] = useState("");
     const [activeReplyId, setActiveReplyId] = useState(null); 
 
     const { user: currentUser } = useSelector((state) => state.auth);
@@ -60,6 +60,7 @@ export const PostDetails = () => {
         }
     };
 
+    // Fetch comments for the post
     const fetchComments = async () => {
         try {
             setFetchingComments(true);
@@ -74,6 +75,7 @@ export const PostDetails = () => {
         }
     };
 
+    // Fetch list of users who liked the post
     const fetchLikes = async () => {
         try {
             setFetchingLikes(true);
@@ -90,6 +92,7 @@ export const PostDetails = () => {
         }
     };
 
+    // Like or unlike the post
     const handleLike = async () => {
         try {
             const { data } = await API.patch(`/posts/like/${id}`);
@@ -105,6 +108,7 @@ export const PostDetails = () => {
         }
     };
 
+    // Delete the post
     const handleDeletePost = async () => {
         if (window.confirm("Are you sure you want to delete this post?")) {
             try {
@@ -118,11 +122,13 @@ export const PostDetails = () => {
         }
     };
 
+    // Show edit post modal
     const handleShowEditModal = () => {
         setEditContent(post.content);
         setShowEditModal(true);
     };
 
+    // Update post
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         if (!editContent.trim()) {
@@ -145,6 +151,7 @@ export const PostDetails = () => {
         }
     };
 
+    // add comment
     const submitComment = async (e) => {
         e.preventDefault();
         if (!commentText.trim()) return;
@@ -161,6 +168,7 @@ export const PostDetails = () => {
         }
     };
 
+    // add reply
     const submitReply = async (commentId) => {
         if (!replyText.trim()) return;
         try {
@@ -177,6 +185,7 @@ export const PostDetails = () => {
         }
     };
 
+    // delete comment
     const handleDeleteComment = async (commentId, isReply = false) => {
         if (window.confirm("Are you sure you want to delete this comment?")) {
             try {
@@ -196,6 +205,7 @@ export const PostDetails = () => {
         }
     };
 
+    // update comment
     const handleUpdateComment = (commentId) => {
         const comment = comments.find(c => c._id === commentId) || comments.flatMap(c => c.replies || []).find(r => r._id === commentId);
         if (!comment) return;
@@ -205,6 +215,7 @@ export const PostDetails = () => {
         setShowEditCommentModal(true);
     };
 
+    // after editing comment & click save changes
     const handleCommentEditSubmit = async (e) => {
         e.preventDefault();
         if (!editCommentText.trim()) {

@@ -74,6 +74,7 @@ export const Profile = () => {
         });
     };
 
+    // Check if user is following another user
     const checkIsFollowing = (targetId) => {
         return getFollowingIds().includes(String(targetId));
     };
@@ -87,6 +88,7 @@ export const Profile = () => {
         return amIFollowed ? "Follow Back" : "Follow";
     };
 
+    // Handle follow/unfollow
     const handleFollowToggle = async (targetId) => {
         try {
             const { data } = await API.post(`/users/follow/${targetId}`);
@@ -120,6 +122,7 @@ export const Profile = () => {
         fetchProfile(!user)
     } , [isLoggedIn])
 
+    // Fetch user data
     const fetchProfile = async (showLoading = false) => {
         if (showLoading) setLoading(true)
         setError(null)
@@ -128,11 +131,11 @@ export const Profile = () => {
             const response = await API.get('/users/profile')
             
             if (response.data.success) {
-                setUser(response.data.user)
-                setPostsCount(response.data.postsCount || 0)
-                setUsername(response.data.user.username)
-                setEmail(response.data.user.email || '')
-                setBio(response.data.user.bio || '')
+                setUser(response.data.user) 
+                setPostsCount(response.data.postsCount || 0) 
+                setUsername(response.data.user.username) 
+                setEmail(response.data.user.email || '') 
+                setBio(response.data.user.bio || '') 
             } else {
                 setError(response.data.message || "Failed to load profile data")
             }
@@ -178,11 +181,11 @@ export const Profile = () => {
 
             if (response.data.success) {
                 toast.success("Profile updated successfully!")
-                setUser(response.data.user) // update in state
-                dispatch(updateUser(response.data.user)) // update in redux
-                setShowEditModal(false) // close modal
-                setSelectedFile(null) // clear selected file
-                setPreviewUrl(null) // clear preview URL
+                setUser(response.data.user)
+                dispatch(updateUser(response.data.user))
+                setShowEditModal(false) 
+                setSelectedFile(null) 
+                setPreviewUrl(null)
             }
         } catch (error) {
             console.error("Update error:", error)
@@ -192,11 +195,12 @@ export const Profile = () => {
         }
     }
 
+    // remove profile picture
     const handleRemovePhoto = async () => {
         if (previewUrl || selectedFile) {
-            setPreviewUrl(null); // clear preview
-            setSelectedFile(null); // clear selected file
-            if (fileInputRef.current) fileInputRef.current.value = ""; // clear file input
+            setPreviewUrl(null); 
+            setSelectedFile(null); 
+            if (fileInputRef.current) fileInputRef.current.value = ""; 
             return;
         }
 
@@ -207,8 +211,8 @@ export const Profile = () => {
                     const response = await API.delete('/users/profile/picture');
                     if (response.data.success) {
                         toast.success("Profile picture removed!");
-                        setUser(response.data.user); // update in state
-                        dispatch(updateUser(response.data.user)); // update in redux
+                        setUser(response.data.user); 
+                        dispatch(updateUser(response.data.user)); 
                     }
                 } catch (error) {
                     toast.error("Failed to remove profile picture");
@@ -223,8 +227,8 @@ export const Profile = () => {
         try {
             const response = await API.get('/users/followers')
             if (response.data.success) {
-                setFollowersList(response.data.followers) // set followers list in state
-                setShowFollowersModal(true) // open modal
+                setFollowersList(response.data.followers) 
+                setShowFollowersModal(true) 
             }
         } catch (error) {
             toast.error("Failed to load followers")
@@ -239,8 +243,8 @@ export const Profile = () => {
         try {
             const response = await API.get('/users/following')
             if (response.data.success) {
-                setFollowingList(response.data.following) // set following list in state
-                setShowFollowingModal(true) // open modal
+                setFollowingList(response.data.following) 
+                setShowFollowingModal(true) 
             }
         } catch (error) {
             toast.error("Failed to load following")
@@ -254,7 +258,7 @@ export const Profile = () => {
         try {
             const response = await API.get(`/posts?userId=${user?._id}`)
             if (response.data.success) {
-                setUserPosts(response.data.posts) // set user posts in state
+                setUserPosts(response.data.posts)
             }
         } catch (error) {
             toast.error("Failed to load user's posts")

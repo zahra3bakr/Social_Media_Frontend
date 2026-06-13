@@ -9,13 +9,13 @@ import { toast } from 'react-hot-toast'
 import '../../Sass/style.scss'
 
 export const Messages = () => {
-    const [messages, setMessages] = useState([]) // store current chat messages
-    const [conversations, setConversations] = useState([]) // store list of conversations for left sidebar
-    const [selectedConv, setSelectedConv] = useState(null) // current Conversation
-    const [selectedUser, setSelectedUser] = useState(null) // user we are chatting with
-    const [newMessage, setNewMessage] = useState("") // current message input
-    const [search, setSearch] = useState("") // search term for filtering conversations
-    const [searchedUsers, setSearchedUsers] = useState([]) // newly added state for global search
+    const [messages, setMessages] = useState([])
+    const [conversations, setConversations] = useState([])
+    const [selectedConv, setSelectedConv] = useState(null)
+    const [selectedUser, setSelectedUser] = useState(null)
+    const [newMessage, setNewMessage] = useState("") 
+    const [search, setSearch] = useState("")
+    const [searchedUsers, setSearchedUsers] = useState([])
     const messagesEndRef = useRef(null) // ref to scroll to bottom of messages
 
     // Edit Message States
@@ -34,17 +34,22 @@ export const Messages = () => {
     useEffect(() => {
         // fetch all conversations 
         fetchConversations()
-    }, [])  // [] -> only run once 
+    }, [])  
 
     // Fetch users when searching globally
     useEffect(() => {
         if (!search.trim()) {
+            // if search is empty, clear the searched users
             setSearchedUsers([])
             return
         }
+
+        // debounce API calls while typing
         const delayDebounceFn = setTimeout(async () => {
             try {
                 const { data } = await API.get(`/search/users?query=${search}`)
+
+                // filter out the current user from the search results
                 if (data.success) {
                     setSearchedUsers(data.users.filter(u => String(u._id) !== String(currentUserId)))
                 }
@@ -52,31 +57,34 @@ export const Messages = () => {
                 console.error("Failed to search users")
             }
         }, 300)
+
+        // clean old timeout if search changes before 300ms 
         return () => clearTimeout(delayDebounceFn)
     }, [search, currentUserId])
 
+
+    // start chat with a user from search results 
     const startChatWithUser = (user) => {
+        // check if this conversation already exists
         const existingConv = conversations.find(c => 
             c.participants.some(p => String(p._id) === String(user._id))
         );
         if (existingConv) {
             fetchMessages(existingConv);
         } else {
-            setSelectedUser(user);
-            setSelectedConv(null);
-            fetchMessagesByUserId(user._id);
+            // No conversation exists yet, so open an empty chat panel
+            setSelectedUser(user); 
+            setSelectedConv(null); 
+            fetchMessagesByUserId(user._id); 
         }
-        setSearch("");
+        setSearch(""); 
     }
 
     // Auto-open chat when navigated from UserProfile
     useEffect(() => {
         const { openUserId, openUser } = location.state || {}
         if (openUserId && openUser) {
-            // Set the user immediately so the chat panel opens
             setSelectedUser(openUser)
-
-            // Fetch messages for this user & me
             fetchMessagesByUserId(openUserId)
 
             // Clear the state so refresh doesn't re-trigger 
@@ -90,11 +98,10 @@ export const Messages = () => {
     }, [messages])
 
     // fetch all conversations for sidebar
-    // runs after sending message , editing/deleting message , deleting conversation 
     const fetchConversations = async () => {
         try {
             const { data } = await API.get('/messages/conversations')
-            setConversations(data) // store conversations
+            setConversations(data) 
         } catch (error) {
             toast.error("Failed to load conversations")
         }
@@ -102,14 +109,13 @@ export const Messages = () => {
 
     // fetch messages for selected conversation
     const fetchMessages = async (conv) => {
-        // find the other participantId in the conversation 
+        // find the other participantId
         const otherUser = conv.participants.find(p => p._id !== currentUserId) || conv.participants[0]
         try {
-            // call from left panel to open chat in right panel 
             const { data } = await API.get(`/messages/${otherUser._id}`)
-            setMessages(data) // store messages
-            setSelectedUser(otherUser) // store other user
-            setSelectedConv(conv) // store conversation
+            setMessages(data) 
+            setSelectedUser(otherUser) 
+            setSelectedConv(conv) 
         } catch (error) {
             toast.error("Failed to load messages for this conversation")
         }
@@ -119,7 +125,7 @@ export const Messages = () => {
     const fetchMessagesByUserId = async (userId) => {
         try {
             const { data } = await API.get(`/messages/${userId}`)
-            setMessages(data) // store messages
+            setMessages(data) 
         } catch (error) {
             toast.error("Failed to load messages for this conversation")
         }
@@ -133,12 +139,11 @@ export const Messages = () => {
         if (!newMessage.trim() || !selectedUser) return
 
         try {
-            // select user + send new message to backend
             const { data } = await API.post(`/messages/send/${selectedUser._id}`, { message: newMessage })
             if (data.success) {
-                setMessages(prev => [...prev, data.newMessage]) // add new message + store it in array
-                setNewMessage("") // clear input field
-                fetchConversations() // refresh sidebar to show latest message
+                setMessages(prev => [...prev, data.newMessage])
+                setNewMessage("")
+                fetchConversations() 
             }
         } catch (error) {
             toast.error("Failed to send message")
@@ -147,9 +152,9 @@ export const Messages = () => {
 
     // edit message 
     const handleEditMessage = (msg) => {
-        setEditingMessage(msg) // store message
-        setEditMessageText(msg.message) // edit message & add it with the old message text
-        setShowEditModal(true) // open edit modal 
+        setEditingMessage(msg) 
+        setEditMessageText(msg.message) 
+        setShowEditModal(true)
     }
 
     // after editing message & click save changes
@@ -165,8 +170,8 @@ export const Messages = () => {
                 toast.success("Message updated!")
                 //map & update the new message instead of the old one 
                 setMessages(prev => prev.map(m => m._id === editingMessage._id ? data.updatedMessage : m))
-                setShowEditModal(false)  // close modal after editing9
-                fetchConversations() // refresh sidebar
+                setShowEditModal(false) 
+                fetchConversations() 
             }
         } catch (error) {
             toast.error("Failed to update message")
@@ -184,7 +189,7 @@ export const Messages = () => {
             if (data.success) {
                 toast.success("Message deleted!")
                 setMessages(prev => prev.filter(m => m._id !== msgId)) // remove deleted message from UI
-                fetchConversations() // refresh sidebar
+                fetchConversations() 
             }
         } catch (error) {
             toast.error("Failed to delete message")
@@ -200,10 +205,10 @@ export const Messages = () => {
             const { data } = await API.delete(`/messages/conversation/delete/${selectedConv._id}`)
             if (data.success) {
                 toast.success("Conversation deleted!")
-                setSelectedUser(null) // close chat panel
-                setSelectedConv(null) // clear selected conversation 
-                setMessages([]) // clear messages from right panel
-                fetchConversations() // refresh left sidebar
+                setSelectedUser(null) 
+                setSelectedConv(null) 
+                setMessages([]) 
+                fetchConversations() 
             }
         } catch (error) {
             toast.error("Failed to delete conversation")
@@ -219,7 +224,8 @@ export const Messages = () => {
     }
 
     const formatTime = (dateStr) => {
-        if (!dateStr) return ''
+        if (!dateStr) return '' 
+        // convert dateStr to Date object
         const d = new Date(dateStr)
         return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }

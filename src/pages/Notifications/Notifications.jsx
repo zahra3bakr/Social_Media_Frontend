@@ -17,6 +17,7 @@ export const Notifications = () => {
         markAsRead();
     }, []);
 
+    // Fetch notifications 
     const fetchNotifications = async () => {
         try {
             setLoading(true);
@@ -32,14 +33,16 @@ export const Notifications = () => {
         }
     };
 
+    // Mark notifications as read
     const markAsRead = async () => {
         try {
-            await API.patch('/notifications/read');
+            await API.patch('/notifications/read'); 
         } catch (error) {
             console.error("Error marking as read:", error);
         }
     };
 
+    // Get icon based on notification type
     const getIcon = (type) => {
         switch (type) {
             case 'like': return <GoHeart className="text-danger" />;
@@ -51,7 +54,10 @@ export const Notifications = () => {
         }
     };
 
+    // Get message based on notification type
     const getMessage = (notif) => {
+        // Get the username of the sender
+        // ?. -> optional chaining(if null/undefined no error return)
         const sender = notif.senderId?.username || 'Someone';
         switch (notif.type) {
             case 'like': return <span><b>@{sender}</b> liked your post</span>;
@@ -63,18 +69,23 @@ export const Notifications = () => {
         }
     };
 
+    // Handle notification click
     const handleNotificationClick = (notif) => {
         const targetId = notif.postId?._id || notif.postId;
+        // if notifi type is like, comment, reply navigate to post
         if (targetId && (notif.type === 'like' || notif.type === 'comment' || notif.type === 'reply')) {
             navigate(`/post/${targetId}`);
         } else if (notif.type === 'follow') {
+            // if notifi is follow navigate to user profile
             const senderId = notif.senderId?._id || notif.senderId;
             if (senderId) navigate(`/user-profile/${senderId}`);
         } else if (notif.type === 'message') {
+            // if notifi is message navigate to messages
             navigate('/messages');
         }
     };
 
+    // sender img
     const getImageUrl = (path) => path ? `${BASE_URL}${path}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
     return (

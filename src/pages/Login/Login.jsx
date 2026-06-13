@@ -19,7 +19,6 @@ export const Login = () => {
         e.preventDefault() // prevent from reloading
 
         try {
-            // api call
             const data = await login({ email, password })
 
             if (data.token) {

@@ -46,6 +46,7 @@ export const UserProfile = () => {
         });
     };
 
+    // check following in currentUser
     const isFollowing = getFollowingIds().includes(String(id));
 
     // check followers in currentUser
@@ -55,6 +56,7 @@ export const UserProfile = () => {
         return String(idToCompare) === String(id);
     });
 
+    // refresh current user data
     const fetchMyProfile = async () => {
         try {
             const { data } = await API.get('/users/profile');
@@ -75,17 +77,18 @@ export const UserProfile = () => {
             navigate('/profile')
             return
         }
-        fetchMyProfile() // refresh currentUser latest data
-        fetchUserProfile() // fetch profile of user we are visiting
-        fetchUserPosts() // fetch posts of user we are visiting
+        fetchMyProfile() 
+        fetchUserProfile() 
+        fetchUserPosts() 
     } , [id])
 
+    // fetch user data
     const fetchUserProfile = async () => {
         setLoading(true)
         try {
             const response = await API.get(`/users/${id}`)
             if (response.data.success) 
-                setUser(response.data.user) // setUser with the user data from response
+                setUser(response.data.user) 
         } catch (error) {
             setError(error.response?.data?.message || "User not found")
         } finally {
@@ -93,6 +96,7 @@ export const UserProfile = () => {
         }
     }
 
+    // fetch user posts
     const fetchUserPosts = async () => {
         try {
             const response = await API.get(`/posts?userId=${id}`)
@@ -103,6 +107,7 @@ export const UserProfile = () => {
         }
     }
 
+    // handle follow
     const handleFollowToggle = async () => {
         setFollowLoading(true)
         try {
@@ -126,6 +131,7 @@ export const UserProfile = () => {
         }
     }
 
+    // handle follow from modal
     const handleFollowFromModal = async (targetId) => {
         try {
             const response = await API.post(`/users/follow/${targetId}`)
@@ -168,6 +174,7 @@ export const UserProfile = () => {
         }
     }
 
+    // View who liked the post & open the modal
     const fetchLikes = async (postId) => {
         try {
             setFetchingLikes(true)
@@ -181,6 +188,7 @@ export const UserProfile = () => {
         }
     }
 
+    // View comments
     const toggleComments = async (postId) => {
         if (expandedPostId === postId) {
             setExpandedPostId(null)
@@ -191,6 +199,7 @@ export const UserProfile = () => {
         await fetchComments(postId)
     }
 
+    // Fetch comments
     const fetchComments = async (postId) => {
         try {
             setFetchingComments(true)
@@ -203,6 +212,7 @@ export const UserProfile = () => {
         }
     }
 
+    // add new comment
     const submitComment = async (postId) => {
         if (!commentText.trim()) return
         try {
@@ -218,6 +228,7 @@ export const UserProfile = () => {
         }
     }
 
+    // add new reply
     const submitReply = async (commentId, postId) => {
         if (!replyText.trim()) return
         try {
@@ -234,6 +245,7 @@ export const UserProfile = () => {
         }
     }
 
+    // delete comment
     const handleDeleteComment = async (commentId, postId, isReply = false) => {
         if (window.confirm("Are you sure you want to delete this comment?")) {
             try {
@@ -252,6 +264,7 @@ export const UserProfile = () => {
         }
     };
 
+    // update comment
     const handleUpdateComment = async (commentId, postId) => {
         const comment = postComments.find(c => c._id === commentId) || postComments.flatMap(c => c.replies || []).find(r => r._id === commentId);
         const newText = window.prompt("Edit your comment:", comment?.text || "");

@@ -20,7 +20,6 @@ export const Register = () => {
         e.preventDefault()
 
         try {
-            // api call
             const data = await register(formData)
 
             dispatch(loginSuccess({ token: data.token, user: data.user }))

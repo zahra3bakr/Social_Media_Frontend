@@ -53,8 +53,7 @@ export const Home = () => {
   const { user: currentUser } = useSelector((state) => state.auth);
   const currentUserId = currentUser?._id || currentUser?.id; // get user id from redux store
 
-  // for coparison of following ids 
-  // flow -> 
+  // for comparison of following ids 
   const getFollowingIds = () => {
     if (!currentUser?.following) return [];
     return currentUser.following.map(id => {
@@ -123,7 +122,6 @@ export const Home = () => {
     fetchPosts();
     fetchSuggestedUsers();
   }, [] );
-  // [] -> runs only once
 
   const fetchSuggestedUsers = async () => {
     try {
@@ -265,14 +263,15 @@ export const Home = () => {
     }
   };
 
+  // add new comment
   const submitComment = async (postId) => {
-    if (!commentText.trim()) return; // empty comments
+    if (!commentText.trim()) return;
     try {
       const { data } = await API.post(`/posts/comment/${postId}`, { text: commentText });
       if (data.success) {
         toast.success("Comment added!");
-        setCommentText(""); // clear inputs
-        fetchComments(postId); // Refresh comments
+        setCommentText(""); 
+        fetchComments(postId); 
 
         // +1 commentsCount in UI
         setPosts(posts.map(p => p._id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p));
@@ -283,15 +282,16 @@ export const Home = () => {
     }
   };
 
+  // add new reply to specific comment
   const submitReply = async (commentId, postId) => {
-    if (!replyText.trim()) return; // empty replies
+    if (!replyText.trim()) return; 
     try {
       const { data } = await API.post(`/posts/comment/${commentId}/reply`, { text: replyText });
       if (data.success) {
         toast.success("Reply added!");
-        setReplyText(""); // clear inputs
-        setActiveReplyId(null); // clear active reply
-        fetchComments(postId); // Refresh comments to show new reply
+        setReplyText(""); 
+        setActiveReplyId(null); 
+        fetchComments(postId); 
 
         // +1 commentsCount in UI
         setPosts(posts.map(p => p._id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p));
@@ -302,6 +302,7 @@ export const Home = () => {
     }
   };
 
+  // delete comment
   const handleDeleteComment = async (commentId, postId, isReply = false) => {
     if (window.confirm("Are you sure you want to delete this comment?")) {
       try {
@@ -321,6 +322,7 @@ export const Home = () => {
     }
   };
 
+  // update comment
   const handleUpdateComment = (commentId, postId) => {
     // Find the parent comment if not search by flatMap
     const comment = postComments.find(c => c._id === commentId) || postComments.flatMap(c => c.replies || []).find(r => r._id === commentId);
@@ -328,10 +330,11 @@ export const Home = () => {
     
     setEditingComment(comment); // store the current comment
     setEditCommentText(comment.text); // store the old text
-    setEditingCommentPostId(postId); // store the post id 
-    setShowEditCommentModal(true); // open the modal
+    setEditingCommentPostId(postId); 
+    setShowEditCommentModal(true);
   };
 
+  // after editing comment & click save changes
   const handleCommentEditSubmit = async (e) => {
     e.preventDefault(); // prevent page reload 
     if (!editCommentText.trim()) {
@@ -343,8 +346,8 @@ export const Home = () => {
       const { data } = await API.put(`/posts/comment/${editingComment._id}`, { text: editCommentText });
       if (data.success) {
           toast.success("Comment updated!");
-          setShowEditCommentModal(false); // close Modal
-          fetchComments(editingCommentPostId); // refresh comments
+          setShowEditCommentModal(false);
+          fetchComments(editingCommentPostId); 
       }
     } catch (error) {
       console.error("Error updating comment", error);
@@ -354,6 +357,7 @@ export const Home = () => {
     }
   };
 
+  // delete post
   const handleDeletePost = async (postId) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
@@ -367,12 +371,14 @@ export const Home = () => {
     }
   };
 
+  // show edit post modal 
   const handleShowEditModal = (post) => {
-    setEditingPost(post); // store in edeitingPost state
+    setEditingPost(post); 
     setEditContent(post.content); // put old content in editContent state
-    setShowEditModal(true); // open Modal
+    setShowEditModal(true); 
   };
 
+  // update post
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     if (!editContent.trim()) {
@@ -395,7 +401,7 @@ export const Home = () => {
     }
   };
 
-  // Helper functions -> for formatting time & image
+  
   const formatDate = (dateString) => {
     // take dataString from backend & make from it Date 
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };

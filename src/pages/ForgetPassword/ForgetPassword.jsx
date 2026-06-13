@@ -14,7 +14,6 @@ export const ForgetPassword = () => {
         e.preventDefault()
         setIsLoading(true)
         try {
-            // api call
             await forgetPassword(email)
             setMessage("Password reset email sent! Check your inbox.") // static message
             toast.success("Password reset email sent!")
