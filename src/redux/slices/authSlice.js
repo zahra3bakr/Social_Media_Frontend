@@ -126,10 +126,16 @@ const authSlice = createSlice({
             
             localStorage.removeItem('userToken');
             localStorage.removeItem('userInfo');
+        } ,
+
+        removeAccount: (state,action) => {
+            state.savedAccounts = state.savedAccounts.filter(
+                acc => acc.user._id !== action.payload
+            )
         }
     }
 });
 
-export const { loginSuccess, logout, switchAccount, updateUser } = authSlice.actions;
+export const { loginSuccess, logout, switchAccount, updateUser , removeAccount} = authSlice.actions;
 
 export default authSlice.reducer;

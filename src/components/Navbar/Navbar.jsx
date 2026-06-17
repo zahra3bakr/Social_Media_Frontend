@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Navbar as BootstrapNavbar, Button, Container, Nav, Offcanvas, NavDropdown, Form, InputGroup, Badge } from 'react-bootstrap'
 import { useSelector, useDispatch } from 'react-redux'
-import { logout, switchAccount } from '../../redux/slices/authSlice'
+import { logout, removeAccount, switchAccount } from '../../redux/slices/authSlice'
 import { selectIsDarkMode } from '../../redux/slices/themeSlice'
 import { TbSocial } from "react-icons/tb";
 import { AiOutlineLogin, AiOutlineLogout, AiOutlineSearch } from "react-icons/ai";
@@ -23,6 +23,7 @@ export const Navbar = () => {
         // If user is logged in, fetch unread notification count
         if (isLoggedIn) {
             fetchUnreadCount()
+            validateSavedAccounts()
         }
     },
     // fixed in all pages 
@@ -61,6 +62,31 @@ export const Navbar = () => {
         if (account.user._id === user?._id) return; // Already active
         dispatch(switchAccount(account));
         window.location.reload(); // full Reload for page 
+    }
+
+    // remove from switch account
+    const validateSavedAccounts = async () => {
+        if (!validateSavedAccounts?.length) return;
+
+        // check if account is active
+        for(const acc of savedAccounts) {
+            try {
+                await API.get(`/users/${acc.user._id}`);
+            } catch (error) {
+                // remove account from DB 
+                if(error.response.status === 404) {
+                    dispatch(removeAccount(acc.user._id));
+
+                    // if deleted account is active
+                    if(acc.user._id === user._id) {
+                        dispatch(logout());
+                        navigate('/Login');
+                    }
+                }
+
+
+            }
+        }
     }
 
     const expand = "md";
