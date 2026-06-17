@@ -71,14 +71,18 @@ export const Navbar = () => {
         // check if account is active
         for(const acc of savedAccounts) {
             try {
-                await API.get(`/users/${acc.user._id}`);
+                await API.get(`/users/${acc.user._id}` , {
+                    headers: {
+                        Authorization: `Bearer ${acc.token}`
+                    }
+                }) 
             } catch (error) {
                 // remove account from DB 
-                if(error.response.status === 404) {
+                if(error.response?.status === 404 || error.response?.status === 401) {
                     dispatch(removeAccount(acc.user._id));
 
                     // if deleted account is active
-                    if(acc.user._id === user._id) {
+                    if(acc.user._id === user?._id) {
                         dispatch(logout());
                         navigate('/Login');
                     }

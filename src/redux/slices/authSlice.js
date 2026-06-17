@@ -132,6 +132,8 @@ const authSlice = createSlice({
             state.savedAccounts = state.savedAccounts.filter(
                 acc => acc.user._id !== action.payload
             )
+
+            localStorage.setItem('savedAccounts', JSON.stringify(state.savedAccounts));
         }
     }
 });
